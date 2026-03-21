@@ -974,10 +974,6 @@
             cursor: pointer;
         }
 
-        .disclaimer-checkbox input {
-            display: none;
-        }
-
         .disclaimer-checkbox .checkbox {
             margin-top: 2px;
         }
@@ -1130,11 +1126,10 @@
             <div class="disclaimer-icon">⚕️</div>
             <h2 class="disclaimer-title">For Healthcare Professionals</h2>
             <p class="disclaimer-body">This app is an educational reference tool for qualified healthcare professionals. It supports — but does not replace — clinical judgment. All plans and targets must be confirmed against your local protocols and the treating team's instructions for this specific patient.</p>
-            <label class="disclaimer-checkbox" onclick="toggleDisclaimer()">
-                <input type="checkbox" id="disclaimerCheck">
+            <div class="disclaimer-checkbox" onclick="toggleDisclaimer()">
                 <div class="checkbox" id="disclaimerCheckbox"></div>
                 <span class="disclaimer-checkbox-label">I am a healthcare professional and understand these limitations</span>
-            </label>
+            </div>
             <button class="disclaimer-btn" id="disclaimerBtn" disabled onclick="acceptDisclaimer()">I understand</button>
         </div>
     </div>
