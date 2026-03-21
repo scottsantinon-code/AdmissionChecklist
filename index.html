@@ -1091,11 +1091,6 @@
         <main class="main-content" id="mainContent">
             <!-- Home Screen -->
             <div class="screen active" id="homeScreen">
-                <div class="home-header">
-                    <h1>Admission Checklist</h1>
-                    <p>Structured ICU admission planning</p>
-                </div>
-
                 <div id="conditionCards"></div>
 
                 <div class="home-footer">
@@ -1474,8 +1469,8 @@
                             {
                                 id: 'bloods',
                                 title: 'Bloods',
-                                subtitle: 'FBE, UEC, CMP, LFTs, coagulation studies (INR, APTT, fibrinogen), ABG/VBG',
-                                considerations: 'Consider: serial troponin if concern for perioperative MI; lactate for perfusion assessment',
+                                subtitle: 'FBE, UEC, CMP, LFTs, coagulation studies, ABG/VBG',
+                                considerations: 'Consider: serial troponin if concern for perioperative MI',
                                 deepDive: {
                                     title: 'Troponin After Cardiac Surgery',
                                     content: `
@@ -1973,7 +1968,6 @@
                                 ${c.title}
                                 ${comingSoon ? '<span class="coming-soon-badge">Coming soon</span>' : ''}
                             </div>
-                            <div class="condition-subtitle">${c.subtitle}</div>
                         </div>
                         ${comingSoon ? '' : '<div class="condition-chevron">›</div>'}
                     </div>
