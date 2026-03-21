@@ -5,103 +5,546 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Admission Checklist">
     <title>Admission Checklist</title>
     <style>
         :root {
-            --bg-primary: #FAFAFA;
-            --bg-secondary: #FFFFFF;
-            --bg-tertiary: #F0F0F5;
-            --text-primary: #000000;
-            --text-secondary: #48484A;
-            --text-tertiary: #8E8E93;
-            --accent: #8B5CF6;
-            --accent-light: rgba(139, 92, 246, 0.08);
-            --success: #30D158;
-            --success-light: rgba(48, 209, 88, 0.12);
-            --warning: #F59E0B;
-            --warning-light: rgba(245, 158, 11, 0.12);
-            --error: #FF453A;
-            --error-light: rgba(255, 69, 58, 0.12);
-            --border: rgba(0, 0, 0, 0.04);
-            --border-strong: rgba(0, 0, 0, 0.08);
-            --shadow-sm: 0 0 0 1px rgba(0,0,0,0.03), 0 2px 4px rgba(0,0,0,0.02);
-            --shadow-md: 0 0 0 1px rgba(0,0,0,0.03), 0 4px 12px rgba(0,0,0,0.05);
-            --radius-lg: 16px;
-            --radius-md: 12px;
-            --radius-sm: 10px;
-            --transition: 0.2s ease;
-            --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+            --bg: #f5f5f7;
+            --bg-grouped: #ffffff;
+            --label: #1d1d1f;
+            --label-secondary: #424245;
+            --label-tertiary: #86868b;
+            --label-quaternary: #d2d2d7;
+            --separator: rgba(0,0,0,0.08);
+            --fill: rgba(118,118,128,0.12);
+            --fill-secondary: rgba(118,118,128,0.08);
+            --blue: #0071e3;
+            --green: #30d158;
+            --orange: #ff9f0a;
+            --red: #ff453a;
+            --teal: #30b0c7;
+            --card-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: var(--font);
-            background: var(--bg-primary);
-            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--label);
             min-height: 100vh;
             min-height: 100dvh;
             display: flex;
             justify-content: center;
+            -webkit-font-smoothing: antialiased;
         }
 
         .app-container {
             width: 100%;
-            max-width: 440px;
+            max-width: 430px;
             min-height: 100vh;
             min-height: 100dvh;
-            background: var(--bg-primary);
-            padding: 16px;
-            padding-top: calc(16px + env(safe-area-inset-top));
-            padding-bottom: calc(32px + env(safe-area-inset-bottom));
+            background: var(--bg);
+            position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
-        .header {
+        /* Navigation Bar */
+        .nav-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg);
+            padding: 12px 16px;
+            padding-top: calc(12px + env(safe-area-inset-top));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 0.5px solid var(--separator);
+        }
+
+        .nav-btn {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            color: var(--blue);
+            font-size: 20px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:active {
+            background: var(--fill);
+            transform: scale(0.95);
+        }
+
+        .nav-btn.hidden {
+            visibility: hidden;
+        }
+
+        .nav-title {
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 16px;
+            padding-bottom: calc(32px + env(safe-area-inset-bottom));
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Screen transitions */
+        .screen {
+            display: none;
+            animation: fadeIn 0.25s ease forwards;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Home Screen Header */
+        .home-header {
             text-align: center;
             margin-bottom: 24px;
         }
 
-        .header h1 {
-            font-size: 28px;
+        .home-header h1 {
+            font-size: 22px;
             font-weight: 700;
             letter-spacing: -0.5px;
-            color: var(--text-primary);
+            color: var(--label);
         }
 
-        .header p {
+        .home-header p {
             font-size: 15px;
-            color: var(--text-tertiary);
+            color: var(--label-secondary);
             margin-top: 4px;
         }
 
-        .card {
-            background: var(--bg-secondary);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
+        /* Condition Cards */
+        .condition-card {
+            background: var(--bg-grouped);
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
             padding: 16px;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        .card-title {
+        .condition-card:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .condition-card.coming-soon {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .condition-card.coming-soon:active {
+            transform: none;
+            opacity: 0.5;
+        }
+
+        .condition-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--fill-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .condition-info {
+            flex: 1;
+        }
+
+        .condition-title {
             font-size: 17px;
             font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 12px;
+            color: var(--label);
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
+        .coming-soon-badge {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--label-quaternary);
+            background: var(--fill-secondary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .condition-subtitle {
+            font-size: 14px;
+            color: var(--label-secondary);
+            margin-top: 2px;
+        }
+
+        .condition-chevron {
+            color: var(--label-tertiary);
+            font-size: 18px;
+            font-weight: 300;
+        }
+
+        /* Footer */
+        .home-footer {
+            text-align: center;
+            margin-top: 24px;
+            padding-top: 16px;
+        }
+
+        .footer-text {
+            font-size: 12px;
+            color: var(--label-tertiary);
+        }
+
+        .footer-info-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            background: var(--fill);
+            color: var(--label-tertiary);
+            font-size: 12px;
+            margin-left: 8px;
+            cursor: pointer;
+            border: none;
+            vertical-align: middle;
+        }
+
+        /* Segmented Control */
+        .segmented-control {
+            display: flex;
+            background: var(--fill);
+            border-radius: 10px;
+            padding: 3px;
+            margin-bottom: 16px;
+        }
+
+        .segment {
+            flex: 1;
+            padding: 10px 16px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--label-secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            background: none;
+        }
+
+        .segment.active {
+            background: var(--bg-grouped);
+            color: var(--label);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        /* Progress Summary */
+        .progress-summary {
+            background: var(--bg-grouped);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .progress-bar-container {
+            height: 4px;
+            background: var(--fill);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--green);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 13px;
+            color: var(--label-tertiary);
+            text-align: right;
+        }
+
+        /* Handover Section Cards */
+        .handover-card {
+            background: var(--bg-grouped);
+            border-radius: 14px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .handover-header {
+            display: flex;
+            align-items: flex-start;
+            padding: 14px 16px;
+            cursor: pointer;
+            min-height: 44px;
+            gap: 12px;
+        }
+
+        .handover-header:active {
+            background: var(--fill-secondary);
+        }
+
+        .handover-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 12px;
+            background: var(--fill);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--label-secondary);
+            flex-shrink: 0;
+        }
+
+        .handover-titles {
+            flex: 1;
+        }
+
+        .handover-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--label);
+            line-height: 1.3;
+        }
+
+        .handover-prompt {
+            font-size: 14px;
+            color: var(--label-tertiary);
+            margin-top: 2px;
+            line-height: 1.4;
+        }
+
+        .handover-chevron {
+            font-size: 14px;
+            color: var(--label-tertiary);
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+            margin-top: 3px;
+        }
+
+        .handover-card.expanded .handover-chevron {
+            transform: rotate(180deg);
+        }
+
+        .handover-content {
+            display: none;
+            padding: 0 16px 16px;
+            border-top: 0.5px solid var(--separator);
+            margin-top: 0;
+        }
+
+        .handover-card.expanded .handover-content {
+            display: block;
+        }
+
+        .considerations-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--label-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 14px;
+            margin-bottom: 8px;
+        }
+
+        .consideration-item {
+            font-size: 14px;
+            color: var(--label-secondary);
+            line-height: 1.5;
+            padding-left: 12px;
+            position: relative;
+            margin-bottom: 6px;
+        }
+
+        .consideration-item::before {
+            content: '·';
+            position: absolute;
+            left: 0;
+            color: var(--label-tertiary);
+            font-weight: bold;
+        }
+
+        .deep-dive-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--fill-secondary);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-top: 14px;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .deep-dive-btn:active {
+            background: var(--fill);
+            transform: scale(0.98);
+        }
+
+        .deep-dive-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 14px;
+            background: var(--blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .deep-dive-text {
+            flex: 1;
+        }
+
+        .deep-dive-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--label);
+        }
+
+        .deep-dive-subtitle {
+            font-size: 12px;
+            color: var(--label-tertiary);
+        }
+
+        /* Domain Cards (Checklist) */
+        .domain-card {
+            background: var(--bg-grouped);
+            border-radius: 14px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        .domain-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            cursor: pointer;
+            min-height: 44px;
+        }
+
+        .domain-header:active {
+            background: var(--fill-secondary);
+        }
+
+        .domain-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--label);
+        }
+
+        .domain-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .domain-progress {
+            font-size: 14px;
+            color: var(--label-tertiary);
+        }
+
+        .domain-progress.complete {
+            color: var(--green);
+        }
+
+        .domain-chevron {
+            font-size: 14px;
+            color: var(--label-tertiary);
+            transition: transform 0.2s ease;
+        }
+
+        .domain-card.expanded .domain-chevron {
+            transform: rotate(180deg);
+        }
+
+        .domain-content {
+            display: none;
+            border-top: 0.5px solid var(--separator);
+        }
+
+        .domain-card.expanded .domain-content {
+            display: block;
+        }
+
+        /* Sub-section headers */
+        .subsection-header {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--label-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 10px 16px 8px;
+            background: var(--fill-secondary);
+        }
+
+        /* Checklist Items */
         .checklist-item {
             display: flex;
             align-items: flex-start;
+            padding: 14px 16px;
             gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 0.5px solid var(--separator);
         }
 
         .checklist-item:last-child {
@@ -111,384 +554,1863 @@
         .checkbox {
             width: 24px;
             height: 24px;
-            border-radius: 6px;
-            border: 2px solid var(--border-strong);
-            background: var(--bg-secondary);
-            cursor: pointer;
+            border-radius: 12px;
+            border: 2px solid var(--label-quaternary);
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            transition: var(--transition);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--bg-grouped);
         }
 
         .checkbox.checked {
-            background: var(--success);
-            border-color: var(--success);
+            background: var(--green);
+            border-color: var(--green);
         }
 
-        .checkbox svg {
-            width: 14px;
-            height: 14px;
+        .checkbox.checked::after {
+            content: '✓';
             color: white;
-            opacity: 0;
-            transition: var(--transition);
+            font-size: 14px;
+            font-weight: 600;
         }
 
-        .checkbox.checked svg {
-            opacity: 1;
+        @keyframes checkBounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+
+        .checkbox.checked {
+            animation: checkBounce 0.2s ease;
         }
 
         .checklist-content {
             flex: 1;
+            min-width: 0;
         }
 
-        .checklist-label {
-            font-size: 15px;
-            font-weight: 500;
-            color: var(--text-primary);
+        .checklist-title {
+            font-size: 16px;
+            font-weight: 400;
+            color: var(--label);
+            line-height: 1.4;
+            transition: color 0.2s ease;
+        }
+
+        .checklist-item.checked .checklist-title {
+            color: var(--label-tertiary);
+        }
+
+        .checklist-subtitle {
+            font-size: 14px;
+            color: var(--label-secondary);
+            margin-top: 2px;
             line-height: 1.4;
         }
 
-        .checklist-hint {
-            font-size: 13px;
-            color: var(--text-tertiary);
-            margin-top: 2px;
-        }
-
-        .progress-bar {
-            height: 6px;
-            background: var(--bg-tertiary);
-            border-radius: 3px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--success);
-            border-radius: 3px;
-            transition: width 0.3s ease;
-        }
-
-        .progress-text {
-            font-size: 13px;
-            color: var(--text-tertiary);
-            text-align: right;
+        .checklist-considerations {
+            font-size: 14px;
+            color: var(--label-tertiary);
+            font-style: italic;
             margin-top: 4px;
+            line-height: 1.4;
         }
 
-        .reset-btn {
-            width: 100%;
-            padding: 16px;
+        .checklist-info-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 14px;
+            background: var(--fill-secondary);
+            color: var(--blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            flex-shrink: 0;
             border: none;
-            border-radius: var(--radius-md);
-            background: var(--bg-tertiary);
-            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .checklist-info-btn:active {
+            background: var(--fill);
+            transform: scale(0.95);
+        }
+
+        /* Target Cards (Goals & Targets) */
+        .target-card {
+            background: var(--bg-grouped);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .target-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .target-param {
             font-size: 15px;
             font-weight: 600;
+            color: var(--label);
+        }
+
+        .target-range {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--blue);
+        }
+
+        .target-nudge {
+            font-size: 13px;
+            color: var(--label-tertiary);
+            font-style: italic;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        .target-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .target-reviewed {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--label-tertiary);
             cursor: pointer;
-            transition: var(--transition);
-            margin-top: 8px;
+        }
+
+        .target-reviewed .checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 10px;
+        }
+
+        .target-reviewed .checkbox.checked::after {
+            font-size: 11px;
+        }
+
+        /* Reset Button */
+        .reset-btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            margin-top: 24px;
+            background: none;
+            border: none;
+            color: var(--red);
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: center;
         }
 
         .reset-btn:active {
+            opacity: 0.7;
+        }
+
+        /* Bottom Sheet Overlay */
+        .sheet-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .sheet-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Bottom Sheet */
+        .bottom-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-height: 85vh;
+            background: var(--bg-grouped);
+            border-radius: 16px 16px 0 0;
+            z-index: 1001;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sheet-overlay.active .bottom-sheet {
+            transform: translateY(0);
+        }
+
+        .sheet-handle {
+            width: 36px;
+            height: 4px;
+            background: var(--label-quaternary);
+            border-radius: 2px;
+            margin: 12px auto 0;
+        }
+
+        .sheet-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px 16px;
+            border-bottom: 0.5px solid var(--separator);
+            flex-shrink: 0;
+        }
+
+        .sheet-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--label);
+            flex: 1;
+            padding-right: 16px;
+        }
+
+        .sheet-done-btn {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--blue);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px 8px;
+            margin: -4px -8px;
+        }
+
+        .sheet-done-btn:active {
+            opacity: 0.7;
+        }
+
+        .sheet-content {
+            padding: 16px 20px 32px;
+            padding-bottom: calc(32px + env(safe-area-inset-bottom));
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            flex: 1;
+        }
+
+        /* Sheet content styles */
+        .sheet-content p {
+            font-size: 15px;
+            color: var(--label-secondary);
+            line-height: 1.6;
+            margin-bottom: 14px;
+        }
+
+        .sheet-content strong {
+            color: var(--label);
+            font-weight: 600;
+        }
+
+        .sheet-content h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--label);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .sheet-content ul {
+            margin-bottom: 14px;
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .sheet-content li {
+            font-size: 15px;
+            color: var(--label-secondary);
+            line-height: 1.5;
+            padding-left: 16px;
+            position: relative;
+            margin-bottom: 6px;
+        }
+
+        .sheet-content li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--label-tertiary);
+        }
+
+        .evidence-box {
+            background: var(--fill);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin: 14px 0;
+        }
+
+        .evidence-box p {
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .evidence-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        .clinical-pearl {
+            background: rgba(255,159,10,0.08);
+            border-left: 3px solid var(--orange);
+            border-radius: 0 10px 10px 0;
+            padding: 12px 14px;
+            margin: 14px 0;
+        }
+
+        .clinical-pearl p {
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 14px 0;
+            font-size: 13px;
+        }
+
+        .comparison-table th {
+            background: var(--fill);
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--label);
+            border-bottom: 0.5px solid var(--separator);
+        }
+
+        .comparison-table td {
+            padding: 10px 12px;
+            color: var(--label-secondary);
+            border-bottom: 0.5px solid var(--separator);
+        }
+
+        .comparison-table tr:nth-child(even) td {
+            background: var(--fill-secondary);
+        }
+
+        .reference {
+            font-size: 12px;
+            color: var(--label-tertiary);
+            font-style: italic;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 0.5px solid var(--separator);
+        }
+
+        /* Disclaimer Modal */
+        .disclaimer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .disclaimer-overlay.hidden {
+            display: none;
+        }
+
+        .disclaimer-modal {
+            background: var(--bg-grouped);
+            border-radius: 20px;
+            padding: 28px 24px;
+            max-width: 340px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .disclaimer-icon {
+            font-size: 40px;
+            margin-bottom: 16px;
+        }
+
+        .disclaimer-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--label);
+            margin-bottom: 12px;
+        }
+
+        .disclaimer-body {
+            font-size: 14px;
+            color: var(--label-secondary);
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .disclaimer-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            text-align: left;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        .disclaimer-checkbox input {
+            display: none;
+        }
+
+        .disclaimer-checkbox .checkbox {
+            margin-top: 2px;
+        }
+
+        .disclaimer-checkbox-label {
+            font-size: 14px;
+            color: var(--label-secondary);
+            line-height: 1.4;
+        }
+
+        .disclaimer-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--blue);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .disclaimer-btn:disabled {
+            background: var(--label-quaternary);
+            cursor: not-allowed;
+        }
+
+        .disclaimer-btn:not(:disabled):active {
             transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        /* Confirm Modal */
+        .confirm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .confirm-overlay.hidden {
+            display: none;
+        }
+
+        .confirm-modal {
+            background: var(--bg-grouped);
+            border-radius: 16px;
+            padding: 20px;
+            max-width: 280px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .confirm-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--label);
+            margin-bottom: 8px;
+        }
+
+        .confirm-message {
+            font-size: 14px;
+            color: var(--label-secondary);
+            margin-bottom: 20px;
+        }
+
+        .confirm-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .confirm-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+        }
+
+        .confirm-btn.cancel {
+            background: var(--fill);
+            color: var(--label);
+        }
+
+        .confirm-btn.confirm {
+            background: var(--red);
+            color: white;
+        }
+
+        .confirm-btn:active {
             opacity: 0.8;
         }
-
-        .animate-in {
-            animation: fadeIn 0.3s ease forwards;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(8px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .stagger-1 { animation-delay: 0.05s; }
-        .stagger-2 { animation-delay: 0.1s; }
-        .stagger-3 { animation-delay: 0.15s; }
-        .stagger-4 { animation-delay: 0.2s; }
     </style>
 </head>
 <body>
-    <div id="root"></div>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <div class="app-container">
+        <!-- Navigation Bar -->
+        <nav class="nav-bar">
+            <button class="nav-btn hidden" id="backBtn" onclick="goBack()">‹</button>
+            <span class="nav-title" id="navTitle">Admission Checklist</span>
+            <button class="nav-btn hidden" id="homeBtn" onclick="goHome()">⌂</button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Home Screen -->
+            <div class="screen active" id="homeScreen">
+                <div class="home-header">
+                    <h1>Admission Checklist</h1>
+                    <p>Structured ICU admission planning</p>
+                </div>
+
+                <div id="conditionCards"></div>
+
+                <div class="home-footer">
+                    <span class="footer-text">v0.1 · Critical Condition</span>
+                    <button class="footer-info-btn" onclick="showAbout()">ⓘ</button>
+                </div>
+            </div>
+
+            <!-- Condition Screen -->
+            <div class="screen" id="conditionScreen">
+                <div class="segmented-control">
+                    <button class="segment" id="handoverTab" onclick="switchTab('handover')">Handover Guide</button>
+                    <button class="segment active" id="checklistTab" onclick="switchTab('checklist')">Checklist</button>
+                </div>
+
+                <!-- Handover Guide Tab -->
+                <div id="handoverContent" style="display: none;"></div>
+
+                <!-- Checklist Tab -->
+                <div id="checklistContent"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Disclaimer Modal -->
+    <div class="disclaimer-overlay" id="disclaimerOverlay">
+        <div class="disclaimer-modal">
+            <div class="disclaimer-icon">⚕️</div>
+            <h2 class="disclaimer-title">For Healthcare Professionals</h2>
+            <p class="disclaimer-body">This app is an educational reference tool for qualified healthcare professionals. It supports — but does not replace — clinical judgment. All plans and targets must be confirmed against your local protocols and the treating team's instructions for this specific patient.</p>
+            <label class="disclaimer-checkbox" onclick="toggleDisclaimer()">
+                <input type="checkbox" id="disclaimerCheck">
+                <div class="checkbox" id="disclaimerCheckbox"></div>
+                <span class="disclaimer-checkbox-label">I am a healthcare professional and understand these limitations</span>
+            </label>
+            <button class="disclaimer-btn" id="disclaimerBtn" disabled onclick="acceptDisclaimer()">I understand</button>
+        </div>
+    </div>
+
+    <!-- Confirm Reset Modal -->
+    <div class="confirm-overlay hidden" id="confirmOverlay">
+        <div class="confirm-modal">
+            <h3 class="confirm-title">Reset Checklist?</h3>
+            <p class="confirm-message">This will clear all checked items. This action cannot be undone.</p>
+            <div class="confirm-buttons">
+                <button class="confirm-btn cancel" onclick="hideConfirm()">Cancel</button>
+                <button class="confirm-btn confirm" onclick="confirmReset()">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Sheet -->
+    <div class="sheet-overlay" id="sheetOverlay" onclick="closeSheetOnOverlay(event)">
+        <div class="bottom-sheet" id="bottomSheet">
+            <div class="sheet-handle" id="sheetHandle"></div>
+            <div class="sheet-header">
+                <h2 class="sheet-title" id="sheetTitle"></h2>
+                <button class="sheet-done-btn" onclick="closeSheet()">Done</button>
+            </div>
+            <div class="sheet-content" id="sheetContent"></div>
+        </div>
+    </div>
+
     <script>
         'use strict';
 
-        // Checklist data structure
-        const CHECKLIST_SECTIONS = [
-            {
-                id: 'documentation',
-                title: 'Documentation',
-                icon: 'doc',
-                items: [
-                    { id: 'consent', label: 'Consent forms signed', hint: 'Including procedure consents if applicable' },
-                    { id: 'id-band', label: 'ID band verified', hint: 'Check name, DOB, MRN' },
-                    { id: 'allergy-band', label: 'Allergy band applied', hint: 'If allergies present' },
-                    { id: 'advance-directive', label: 'Advance directive status', hint: 'Document resuscitation status' }
+        // ============================================================
+        // DATA: Complete CABG clinical content
+        // ============================================================
+        const CONDITIONS = {
+            cabg: {
+                id: 'cabg',
+                title: 'Coronary Artery Bypass Grafting',
+                shortTitle: 'CABG',
+                emoji: '🫀',
+                subtitle: 'Post-cardiac surgical ICU admission',
+                available: true,
+                handoverSections: [
+                    {
+                        id: 'indication',
+                        number: 1,
+                        title: 'Indication & Urgency',
+                        prompt: 'Was this elective or emergency?',
+                        considerations: [
+                            'Emergency ("hot") CABG = patient was actively ischaemic',
+                            'Elective CABG = patient was stable with their native coronary circulation',
+                            'What were the target vessels / territory?'
+                        ],
+                        deepDive: {
+                            title: 'Why urgency matters',
+                            content: `
+                                <p><strong>Why urgency matters:</strong></p>
+                                <p>An emergency CABG means the patient's native coronary circulation was failing — they were having an acute ischaemic event. This has two key implications:</p>
+                                <p><strong>1. Higher perioperative risk.</strong> Emergency CABG carries significantly higher rates of coagulopathy, cardiac dysfunction, longer bypass times, and mortality compared to elective surgery. The myocardium has already been insulted before surgery even begins.</p>
+                                <p><strong>2. Graft failure is more consequential.</strong> If a graft occludes post-operatively, the patient loses their only functional blood supply to that territory — they were already ischaemic without it. Compare this to elective CABG, where the patient was managing (often asymptomatically) with their native circulation. Graft occlusion in the elective patient, while still serious, may not be immediately catastrophic because some native flow was sustaining them.</p>
+                                <div class="clinical-pearl">
+                                    <p><strong>Clinical implication:</strong> For emergency CABG, pay closer attention to the graft anatomy (which grafts go where), have a lower threshold for investigating haemodynamic instability (could represent graft failure), and maintain vigilance for signs of ongoing ischaemia.</p>
+                                </div>
+                                <h3>Graft types — a brief reference</h3>
+                                <p><strong>The key principle:</strong> Arterial grafts last longer than venous grafts — they're more resistant to intimal hyperplasia and atherosclerosis, making them preferable for long-term patency. In younger patients, maximising arterial grafting is particularly desirable. However, arterial grafts (especially the radial artery) are susceptible to vasospasm — a narrowing of the graft lumen due to smooth muscle contraction. This is an important ICU consideration: know what grafts are in place, because the management of suspected graft dysfunction differs.</p>
+                                <ul>
+                                    <li><strong>LIMA (Left Internal Mammary Artery) → LAD</strong> — The gold standard. LIMA grafts have excellent long-term patency (>90% at 10 years). Almost universally used for the LAD. Less prone to vasospasm than other arterial grafts due to its endothelial characteristics.</li>
+                                    <li><strong>RIMA (Right Internal Mammary Artery)</strong> — Sometimes used as a second arterial graft. Bilateral IMA harvest may increase sternal wound complications, particularly in diabetic patients. Long-term patency similar to LIMA.</li>
+                                    <li><strong>Radial artery grafts</strong> — Good medium-to-long-term patency (superior to SVG at 5 and 10 years). Preferred over SVG as the second conduit in current guidelines (ACC/AHA Class I recommendation). However, the radial artery has a well-documented tendency to vasospasm — this was the reason it was initially abandoned as a graft conduit in the 1970s (35% occlusion rate attributed to spasm). Modern practice mitigates this with antispasmodic protocols (calcium channel blockers post-operatively, careful harvesting technique). Usually used for significant (>70%) stenoses due to risk of competitive flow causing graft failure. If a patient with radial artery grafts becomes acutely ischaemic post-operatively, vasospasm should be considered alongside thrombotic graft occlusion — and treated differently (vasodilators rather than return to theatre).</li>
+                                    <li><strong>Saphenous vein grafts (SVG)</strong> — Most commonly used for non-LAD targets. Easier to harvest and not prone to vasospasm. But lower long-term patency (~50-60% at 10 years). Susceptible to early thrombosis (days-weeks), intimal hyperplasia (1-12 months), and accelerated atherosclerosis (>1 year).</li>
+                                </ul>
+                            `
+                        }
+                    },
+                    {
+                        id: 'bypass-time',
+                        number: 2,
+                        title: 'Bypass Time',
+                        prompt: 'Cardiopulmonary bypass time',
+                        considerations: [
+                            'Typical isolated CABG: 60-120 minutes on bypass',
+                            'Longer bypass time = more systemic inflammation, coagulopathy, capillary leak',
+                            'Look at the gap between bypass time and cross-clamp time (see below)'
+                        ],
+                        deepDive: {
+                            title: 'Understanding bypass time',
+                            content: `
+                                <p><strong>What is bypass time?</strong></p>
+                                <p>Bypass time (or CPB time) is the total duration the patient's circulation was supported by the cardiopulmonary bypass machine. During this time, the heart-lung machine oxygenates the blood and maintains perfusion to the body while the surgeon operates on the heart.</p>
+                                <h3>Why it matters</h3>
+                                <p>Bypass is not benign. The bypass circuit inflicts numerous physiological insults: hypothermia, blood contact with non-biologic surfaces, non-pulsatile low-flow state, cannulation/incision of great vessels, clamping of the aorta, use of protamine, and one-lung ventilation or bilateral lung deflation. The longer the bypass time, the greater the cumulative insult.</p>
+                                <h3>Complications of bypass by organ system</h3>
+                                <ul>
+                                    <li><strong>Respiratory</strong> — Atelectasis (very common), iatrogenic pneumothorax, pulmonary hypertension (protamine reaction), phrenic nerve palsy*, ARDS (complement cascade activation)</li>
+                                    <li><strong>Cardiovascular</strong> — Myocardial stunning (contractility may decrease by up to 50%, nadir 4-6 hours post-op), arrhythmias, conduction blocks, vasoplegia (multifactorial — microvascular endothelial dysfunction), air emboli, tamponade, aortic dissection from cannulation/cross-clamping, graft thrombosis/torsion</li>
+                                    <li><strong>Neurological</strong> — Embolic ischaemic stroke, neurocognitive dysfunction (common, often subtle, may be persistent)</li>
+                                    <li><strong>Renal</strong> — Acute kidney injury (non-pulsatile flow, inflammatory response, nephrotoxins)</li>
+                                    <li><strong>Haematological</strong> — Consumptive coagulopathy, thromboembolic phenomena, haemolysis (mechanical shear through the circuit), residual heparinisation</li>
+                                    <li><strong>Endocrine</strong> — Hyperglycaemia (stress response — itself associated with neurological complications)</li>
+                                </ul>
+                                <div class="clinical-pearl">
+                                    <p><strong>Phrenic nerve palsy:</strong> In ~20% of people, the left phrenic nerve passes over the left main coronary artery. It can be injured intra-operatively by being severed, retracted, or damaged by ice-cold cardioplegia solution (topical cooling). Clinical features include unequal chest expansion, paradoxical diaphragm movement on the affected side, elevated hemidiaphragm on CXR, atelectasis, and poor inspiratory effort/cough. This can contribute to difficulty weaning from ventilation and should be considered if there is unexplained post-operative respiratory failure or unilateral diaphragm elevation on CXR.</p>
+                                </div>
+                                <h3>The bypass–cross-clamp gap</h3>
+                                <p>Bypass time = cross-clamp time + time spent weaning from bypass (and any pre-clamp or post-clamp bypass time).</p>
+                                <p>If the bypass time is substantially longer than the cross-clamp time, this suggests difficulty separating from bypass. Ask:</p>
+                                <ul>
+                                    <li>Was there difficulty weaning from bypass? (poor cardiac function, vasodilation)</li>
+                                    <li>Was there refractory arrhythmia requiring treatment before weaning?</li>
+                                    <li>Was there surgical bleeding requiring time to achieve haemostasis?</li>
+                                    <li>Were inotropes, vasopressors, or mechanical support (e.g., IABP) needed to wean?</li>
+                                </ul>
+                                <p>A large bypass–cross-clamp gap is a red flag that the post-operative course may be more complex than expected.</p>
+                            `
+                        }
+                    },
+                    {
+                        id: 'cross-clamp',
+                        number: 3,
+                        title: 'Cross-Clamp Time',
+                        prompt: 'Aortic cross-clamp time',
+                        considerations: [
+                            'Typical isolated CABG: 45-70 minutes',
+                            'Risk of low cardiac output increases progressively with clamp time',
+                            '>75-90 minutes for isolated CABG warrants extra vigilance'
+                        ],
+                        deepDive: {
+                            title: 'Cross-clamp time and cardiac risk',
+                            content: `
+                                <p><strong>What is cross-clamp time?</strong></p>
+                                <p>During bypass, the aorta is clamped between the heart and the arterial cannula. This isolates the heart from the circulation entirely. Cardioplegia solution is delivered to arrest the heart and protect the myocardium, providing the surgeon with a still, bloodless field.</p>
+                                <p>Cross-clamp time = the duration the heart is arrested and isolated.</p>
+                                <h3>Why it matters — the fundamental problem</h3>
+                                <p>Cardioplegia is imperfect. Despite modern cardioplegia solutions, hypothermia, and perfusion strategies, the cross-clamped heart experiences cumulative ischaemic insult. The myocardium is metabolically active even when arrested, and cardioplegia delivery may be patchy (particularly in the presence of severe coronary disease, ventricular hypertrophy, or aortic regurgitation).</p>
+                                <p>The result: longer cross-clamp times are independently associated with:</p>
+                                <ul>
+                                    <li><strong>Low cardiac output syndrome (LCOS)</strong> — the primary concern</li>
+                                    <li>Increased inotrope and mechanical support requirements (IABP, ECMO)</li>
+                                    <li>Greater post-operative bleeding</li>
+                                    <li>Longer ICU and hospital stay</li>
+                                    <li>Increased mortality</li>
+                                </ul>
+                                <h3>Risk thresholds</h3>
+                                <p>There is no universally agreed "safe limit." The risk increases progressively, not as a step function. However:</p>
+                                <ul>
+                                    <li><strong>Mean cross-clamp time for isolated CABG is ~50-60 minutes</strong> (E-CABG registry: mean 58 ± 25 min)</li>
+                                    <li><strong>>75 minutes</strong> — significantly increased risk of 30-day mortality in isolated CABG (E-CABG: OR 3.5 for >75 min)</li>
+                                    <li><strong>>90 minutes</strong> — consistently associated with major morbidity and mortality across cardiac surgery types (Al-Sarraf, 3799 patients)</li>
+                                    <li><strong>>150 minutes</strong> — associated with substantially elevated risk regardless of surgery complexity (Nissinen et al.)</li>
+                                </ul>
+                                <h3>What to do with a long cross-clamp time</h3>
+                                <p>Don't panic — it may simply reflect a technically complex case (multiple grafts, redo surgery, calcified aorta). But do:</p>
+                                <ul>
+                                    <li>Anticipate the possibility of LCOS in the first 24 hours</li>
+                                    <li>Have a low threshold for measuring cardiac index / cardiac output</li>
+                                    <li>Ensure adequate inotropic support is available</li>
+                                    <li>Watch for signs of myocardial stunning (low CO, rising lactate, increasing vasopressor requirements)</li>
+                                    <li>Consider echocardiography early if haemodynamics are not as expected</li>
+                                </ul>
+                                <div class="evidence-box">
+                                    <p><strong>Evidence:</strong></p>
+                                    <p>• E-CABG registry (Ruggieri 2018) — 2957 isolated CABG. XCT is independent predictor of 30-day mortality; highest adjusted risk at >75 min.</p>
+                                    <p>• Al-Sarraf 2011 — 3799 consecutive cardiac surgery patients. XCT correlates with morbidity/mortality in both low and high-risk patients, especially >90 min.</p>
+                                    <p>• Nissinen 2009 — Procedures with CPB <240 min and XCT <150 min were associated with low risk regardless of complexity.</p>
+                                </div>
+                            `
+                        }
+                    },
+                    {
+                        id: 'preop-function',
+                        number: 4,
+                        title: 'Pre-op Cardiac Function',
+                        prompt: 'Pre-op LVEF and TOE findings',
+                        considerations: [
+                            'What was the baseline ventricular function before surgery?',
+                            'Any significant valvular disease noted?',
+                            'Regional wall motion abnormalities? (Which territory?)',
+                            'Pre-existing diastolic dysfunction?'
+                        ],
+                        deepDive: {
+                            title: 'Why pre-op function matters',
+                            content: `
+                                <p><strong>Why this matters:</strong></p>
+                                <p>Post-bypass myocardial stunning is universal — the heart will perform worse in the first 12-48 hours than its pre-operative baseline. Understanding the starting point tells you:</p>
+                                <ul>
+                                    <li>How much reserve the patient has (EF 60% with stunning is different from EF 30% with stunning)</li>
+                                    <li>Whether post-operative haemodynamic compromise represents a new problem or expected stunning of an already impaired ventricle</li>
+                                    <li>What "normal for this patient" looks like — your haemodynamic targets should be contextualised to their baseline</li>
+                                </ul>
+                                <h3>Key TOE findings to register</h3>
+                                <ul>
+                                    <li>Global LV function and any regional wall motion abnormalities (RWMA)</li>
+                                    <li>RV function (often underappreciated — RV failure post-bypass can be devastating)</li>
+                                    <li>Valvular function — particularly mitral regurgitation (may worsen post-operatively) and aortic regurgitation (affects cardioplegia delivery)</li>
+                                    <li>Any intracardiac findings (PFO, thrombus, aortic atheroma)</li>
+                                </ul>
+                            `
+                        }
+                    },
+                    {
+                        id: 'postop-toe',
+                        number: 5,
+                        title: 'Post-op TOE',
+                        prompt: 'Post-operative TOE findings',
+                        considerations: [
+                            'How does function compare to pre-op?',
+                            'Any new regional wall motion abnormalities? (Could suggest graft issue or incomplete revascularisation)',
+                            'New or worsened valvular regurgitation?'
+                        ],
+                        deepDive: {
+                            title: 'Interpreting post-op TOE',
+                            content: `
+                                <p>The post-operative TOE is your first look at how the heart is performing after revascularisation and bypass. Compare directly to pre-op findings:</p>
+                                <ul>
+                                    <li><strong>Improved RWMA</strong> — suggests successful revascularisation of previously ischaemic territory</li>
+                                    <li><strong>New RWMA</strong> — concerning for graft dysfunction, air embolism, or inadequate myocardial protection. Note the territory and correlate with graft anatomy.</li>
+                                    <li><strong>Unchanged severely impaired function</strong> — may represent fixed (scarred) myocardium or stunning that will take time to recover</li>
+                                </ul>
+                            `
+                        }
+                    },
+                    {
+                        id: 'separating-bypass',
+                        number: 6,
+                        title: 'Separating from Bypass',
+                        prompt: 'Any difficulty coming off bypass?',
+                        considerations: [
+                            'How many attempts to wean?',
+                            'What support was needed? (Inotropes, vasopressors, IABP, pacing)',
+                            'Was the rhythm stable on weaning? (SR, AF, heart block requiring pacing)',
+                            'Was there persistent bleeding at the surgical site?'
+                        ],
+                        deepDive: {
+                            title: 'Difficulty separating from bypass',
+                            content: `
+                                <p>Difficulty separating from bypass is one of the most important things to know about because it predicts a more complex ICU course. Causes include:</p>
+                                <ul>
+                                    <li><strong>Myocardial stunning / poor cardiac function</strong> — especially after long clamp times or pre-existing impairment</li>
+                                    <li><strong>Vasoplegia</strong> — loss of systemic vascular tone (warm, vasodilated, low SVR). Common after prolonged bypass, ACE-inhibitor use, or in patients on multiple cardiac medications pre-operatively</li>
+                                    <li><strong>Arrhythmia</strong> — AF (most common), heart block, VT</li>
+                                    <li><strong>Surgical bleeding</strong> — ongoing haemorrhage preventing stable haemodynamics</li>
+                                    <li><strong>Graft failure</strong> — acute occlusion causing regional ischaemia</li>
+                                    <li><strong>Protamine reaction</strong> — anaphylactoid response during heparin reversal</li>
+                                </ul>
+                                <div class="clinical-pearl">
+                                    <p>If they required IABP insertion intra-operatively, expect complex haemodynamic management. Clarify when the team expects it can be weaned.</p>
+                                </div>
+                            `
+                        }
+                    },
+                    {
+                        id: 'blood-products',
+                        number: 7,
+                        title: 'Blood Products & Fluid',
+                        prompt: 'Transfusion and fluid balance',
+                        considerations: [
+                            'Large volume resuscitation = expect coagulopathy, capillary leak, third-spacing',
+                            'Packed red cells > 4 units = higher risk of transfusion-related complications',
+                            'Was cell salvage used?',
+                            'What is the expected post-operative haemoglobin?'
+                        ],
+                        deepDive: null
+                    },
+                    {
+                        id: 'drains',
+                        number: 8,
+                        title: 'Drains',
+                        prompt: 'Drain number, location, output',
+                        considerations: [
+                            'How many drains and where? (Mediastinal, pleural — left, right, or both)',
+                            'What has the output been since placement?',
+                            'Is the output settling or ongoing?',
+                            'Notification threshold (typically >100 mL/hr — confirm with surgical team)'
+                        ],
+                        deepDive: {
+                            title: 'Drain output monitoring',
+                            content: `
+                                <p>Post-cardiac drain outputs are a critical monitoring parameter in the first 6-12 hours. Key points:</p>
+                                <ul>
+                                    <li><strong>>100 mL/hr for 3+ consecutive hours</strong> (or >200 mL in any single hour) generally warrants surgical team notification and consideration of re-exploration</li>
+                                    <li>Initial output after arrival may be higher (clearing pooled blood from the mediastinum) — trend is more important than a single reading</li>
+                                    <li>Sudden cessation of drain output is not necessarily good news — may indicate drain blockage (clot) with ongoing mediastinal bleeding, potentially leading to tamponade</li>
+                                    <li>Coagulopathy is the most common cause of excessive bleeding post-bypass; surgical bleeding requiring re-exploration occurs in ~2-5% of cases</li>
+                                </ul>
+                            `
+                        }
+                    },
+                    {
+                        id: 'pacing-wires',
+                        number: 9,
+                        title: 'Pacing Wires',
+                        prompt: 'Atrial / ventricular / both',
+                        considerations: [
+                            'Are they connected and functioning?',
+                            'Is the patient pacing-dependent right now?',
+                            'Current pacing settings (mode, rate, output, sensitivity)',
+                            'Backup plan if wires fail?'
+                        ],
+                        deepDive: {
+                            title: 'Epicardial pacing wires',
+                            content: `
+                                <p>Epicardial pacing wires are placed prophylactically during cardiac surgery for temporary pacing in the post-operative period:</p>
+                                <ul>
+                                    <li><strong>Ventricular wires</strong> — most common; allow ventricular pacing if bradycardia or heart block develops</li>
+                                    <li><strong>Atrial wires</strong> — allow atrial pacing and diagnosis/treatment of atrial arrhythmias. Atrial overdrive pacing can terminate some atrial flutter</li>
+                                    <li><strong>Dual (A + V)</strong> — allow AV sequential pacing, which preserves the atrial contribution to cardiac output (~15-25% of total CO). Important in patients with impaired ventricular function.</li>
+                                </ul>
+                                <p>These wires are usually removed before discharge (typically day 3-5 if no longer required). Removal carries a small risk of bleeding/tamponade.</p>
+                            `
+                        }
+                    },
+                    {
+                        id: 'pericardium',
+                        number: 10,
+                        title: 'Pericardium',
+                        prompt: 'Open or closed',
+                        considerations: [
+                            'Open pericardium reduces risk of acute tamponade but may allow cardiac herniation (rare)',
+                            'Closed pericardium means tamponade physiology may develop more classically if bleeding occurs',
+                            'If open — was it left open deliberately (e.g., swollen heart, planned re-exploration)?'
+                        ],
+                        deepDive: null
+                    },
+                    {
+                        id: 'surgeon-targets',
+                        number: 11,
+                        title: "Surgeon's Targets",
+                        prompt: 'Haemodynamic targets specified by surgeon',
+                        considerations: [
+                            'Did the surgeon specify particular BP targets for this patient?',
+                            'Any specific instructions about vasopressor or inotrope management?',
+                            'Were there intra-operative findings that change your usual targets?'
+                        ],
+                        deepDive: null
+                    }
+                ],
+                checklistDomains: [
+                    {
+                        id: 'investigations',
+                        title: 'Investigations',
+                        items: [
+                            {
+                                id: 'bloods',
+                                title: 'Bloods',
+                                subtitle: 'FBE, UEC, CMP, LFTs, coagulation studies (INR, APTT, fibrinogen), ABG/VBG',
+                                considerations: 'Consider: serial troponin if concern for perioperative MI; lactate for perfusion assessment',
+                                deepDive: {
+                                    title: 'Troponin After Cardiac Surgery',
+                                    content: `
+                                        <p>Troponin is always elevated after cardiac surgery — the heart has been handled, clamped, and potentially had cardioplegia delivered. A single elevated troponin is expected and not diagnostic.</p>
+                                        <p>What matters is:</p>
+                                        <ul>
+                                            <li><strong>The trend</strong> — rising troponin beyond the expected post-operative peak (usually peaks at 12-24h) suggests ongoing myocardial injury</li>
+                                            <li><strong>The clinical context</strong> — a rising troponin with new RWMA on echo, haemodynamic instability, or new ECG changes raises concern for perioperative MI (graft failure, incomplete revascularisation, or type 2 ischaemia from supply-demand mismatch)</li>
+                                            <li><strong>UDMI (Universal Definition of MI) Type 5</strong> — perioperative MI related to CABG. Defined as troponin >10x the 99th percentile URL within 48h, combined with new pathological Q waves, angiographic evidence of graft occlusion, or imaging evidence of new loss of viable myocardium.</li>
+                                        </ul>
+                                    `
+                                }
+                            },
+                            {
+                                id: 'cxr',
+                                title: 'Chest X-ray',
+                                subtitle: 'ETT position, central line position, drain positions, lung fields, mediastinal width',
+                                considerations: 'Consider: is the mediastinum widened compared to pre-op? Pleural effusions? Atelectasis?',
+                                deepDive: null
+                            },
+                            {
+                                id: 'ecg',
+                                title: 'ECG',
+                                subtitle: 'Document post-operative baseline rhythm',
+                                considerations: 'Consider: new ST changes? Compare to pre-op ECG. New conduction abnormalities?',
+                                deepDive: null
+                            },
+                            {
+                                id: 'cardiac-index',
+                                title: 'Cardiac index',
+                                subtitle: 'When warm and haemodynamically stable',
+                                considerations: 'Typical target: CI 2.2-2.8 L/min/m². Notify if <2.2. Consider: how to measure — PAC (if present), transpulmonary thermodilution, echocardiographic estimation',
+                                deepDive: null
+                            }
+                        ]
+                    },
+                    {
+                        id: 'management',
+                        title: 'Management',
+                        subsections: [
+                            {
+                                title: 'Medications',
+                                items: [
+                                    {
+                                        id: 'regular-meds',
+                                        title: 'Review regular medications',
+                                        subtitle: 'Start / Stop / Withhold / Continue',
+                                        considerations: 'Anti-hypertensives often withheld in the first 24h (risk of hypotension while myocardium is stunned). Beta-blockers: consider restarting when haemodynamically stable (AF prophylaxis). Diabetic medications: usually withheld while nil by mouth; insulin infusion for glycaemic control.',
+                                        deepDive: null
+                                    },
+                                    {
+                                        id: 'prophylactic-abx',
+                                        title: 'Prophylactic antibiotics',
+                                        subtitle: 'Per local institutional protocol',
+                                        considerations: 'Is the patient a long-term inpatient? Known MRSA/MSSA colonisation? Renal dosing needed? Duration per local guidelines (typically 24-48h post-operatively).',
+                                        deepDive: {
+                                            title: 'Surgical Site Infection Prevention',
+                                            content: `
+                                                <p>Surgical site infection after cardiac surgery is associated with significant morbidity, prolonged hospital stay, and increased mortality — particularly sternal wound infections / mediastinitis.</p>
+                                                <p>Prophylactic antibiotics are standard but institutional protocols vary. Common considerations:</p>
+                                                <ul>
+                                                    <li>Cephalosporin-based prophylaxis is typical for non-colonised patients</li>
+                                                    <li>Vancomycin may be added for known MRSA carriers or high-prevalence units</li>
+                                                    <li>Duration beyond 48 hours is not supported by evidence and increases resistance risk</li>
+                                                </ul>
+                                            `
+                                        }
+                                    },
+                                    {
+                                        id: 'cabg-meds',
+                                        title: 'CABG-specific medications',
+                                        subtitle: 'Aspirin, statin',
+                                        considerations: 'Aspirin: typically commenced within 6-24 hours post-operatively (graft patency). Confirm surgical team is happy to start and no active bleeding concerns. Statin: continue or commence (pleiotropic effects, long-term secondary prevention).',
+                                        deepDive: {
+                                            title: 'Aspirin and Graft Patency',
+                                            content: `
+                                                <p>Early aspirin after CABG improves graft patency, particularly for saphenous vein grafts.</p>
+                                                <p>Meta-analyses demonstrate that aspirin commenced within 6 hours of surgery reduces SVG occlusion without significantly increasing bleeding risk. Most units aim for aspirin within the first 6-24 hours unless there is active surgical bleeding.</p>
+                                                <div class="clinical-pearl">
+                                                    <p>Dual antiplatelet therapy is not routinely used after isolated CABG (unlike after PCI) unless there are specific indications.</p>
+                                                </div>
+                                            `
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                title: 'Sedation & Analgesia',
+                                items: [
+                                    {
+                                        id: 'sedation',
+                                        title: 'Sedation plan',
+                                        subtitle: 'Propofol infusion standard for early post-operative period',
+                                        considerations: 'Wean per unit protocol as patient warms and stabilises. Target RASS (typically 0 to -1 once warm and stable). Consider: is the patient ready for extubation assessment? (warm, haemodynamically stable, acceptable bleeding, adequate gas exchange)',
+                                        deepDive: null
+                                    },
+                                    {
+                                        id: 'analgesia',
+                                        title: 'Analgesia plan',
+                                        subtitle: 'Paracetamol (regular), opioid PRN, sternal wound pain management',
+                                        considerations: 'Avoid NSAIDs in the early post-operative period (renal risk, bleeding risk)',
+                                        deepDive: null
+                                    }
+                                ]
+                            },
+                            {
+                                title: 'Haemodynamic Support',
+                                items: [
+                                    {
+                                        id: 'vasoactives',
+                                        title: 'Current vasoactive medications',
+                                        subtitle: 'Document what\'s running and the plan',
+                                        considerations: 'Inotrope (e.g., milrinone, dobutamine, adrenaline) — what\'s the weaning plan? Vasopressor (e.g., noradrenaline) — what\'s the weaning plan? Vasodilator (e.g., GTN, SNP) — if hypertensive, what\'s the target? Were these started in theatre to wean from bypass, or are they new?',
+                                        deepDive: null
+                                    },
+                                    {
+                                        id: 'volume-status',
+                                        title: 'Volume status assessment',
+                                        subtitle: 'Assess filling and fluid responsiveness',
+                                        considerations: 'Is the patient under-filled (common post-bypass — vasodilatation + rewarming), adequately filled, or fluid-overloaded (post-bypass capillary leak)? Fluid responsiveness assessment — passive leg raise, stroke volume variation, pulse pressure variation.',
+                                        deepDive: null
+                                    }
+                                ]
+                            },
+                            {
+                                title: 'Ventilation',
+                                items: [
+                                    {
+                                        id: 'ventilation',
+                                        title: 'Ventilator settings',
+                                        subtitle: 'Confirm and review',
+                                        considerations: 'Lung-protective ventilation (Vt 6-8 mL/kg IBW, PEEP, plateau pressure). Post-cardiac surgery patients are often extubated early (within 6-12 hours) — is this patient on track? Barriers to early extubation: ongoing bleeding, haemodynamic instability, hypothermia, neurological concerns, high inotrope requirements.',
+                                        deepDive: null
+                                    }
+                                ]
+                            },
+                            {
+                                title: 'Warming',
+                                items: [
+                                    {
+                                        id: 'warming',
+                                        title: 'Temperature and rewarming plan',
+                                        subtitle: 'Target: normothermia (≥36°C)',
+                                        considerations: 'Active warming (forced air warmer, warm IV fluids) vs passive. Note: vasodilatation during rewarming may cause transient hypotension — anticipate need for volume ± vasopressor adjustment. Shivering increases O₂ consumption significantly — manage aggressively.',
+                                        deepDive: null
+                                    }
+                                ]
+                            },
+                            {
+                                title: 'Monitoring',
+                                items: [
+                                    {
+                                        id: 'drain-monitoring',
+                                        title: 'Drain output monitoring plan',
+                                        subtitle: 'Typical notification threshold: >100 mL/hr for 2-3 consecutive hours',
+                                        considerations: 'Confirm threshold with surgical team for this patient. Document: hourly drain outputs, character (sanguinous → serosanguinous expected).',
+                                        deepDive: null
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        id: 'prophylaxis',
+                        title: 'Routine Prophylaxis',
+                        items: [
+                            {
+                                id: 'vte',
+                                title: 'VTE prophylaxis plan',
+                                subtitle: 'Chemical thromboprophylaxis timing',
+                                considerations: 'When to start? (typically enoxaparin once surgical bleeding has settled, often post-operative day 1). Platelet count? (hold if <50). Coagulopathy? (correct first). Active bleeding? (defer until settled). Renal function? (CrCl <30: consider half-dose with anti-Xa monitoring). Epidural catheter in situ? (coordinate timing with anaesthetics).',
+                                deepDive: {
+                                    title: 'VTE Prophylaxis Evidence',
+                                    content: `
+                                        <p>VTE is the number one cause of preventable deaths in hospital. Chemical prophylaxis approximately halves the risk of DVT but doubles the risk of bleeding — the benefit-risk balance in the post-surgical patient depends on timing and clinical context.</p>
+                                        <h3>LMWH vs unfractionated heparin</h3>
+                                        <p>In ICU patients, LMWH (enoxaparin) appears superior to UFH — a 2021 meta-analysis found equivalent DVT rates but lower PE risk with LMWH (supported by the PROTECT trial). LMWH is generally preferred unless renal impairment necessitates UFH.</p>
+                                        <h3>If chemical prophylaxis is contraindicated</h3>
+                                        <p>Intermittent pneumatic compression devices are better than nothing (low quality evidence). TED stockings have no evidence in the ICU population. IVC filters are rarely indicated — RCTs (including a 2019 Australian trauma RCT, n=240) have shown no mortality benefit.</p>
+                                        <div class="clinical-pearl">
+                                            <p><strong>Once on chemical prophylaxis</strong>, adding mechanical compression devices offers no additional benefit.</p>
+                                        </div>
+                                    `
+                                }
+                            },
+                            {
+                                id: 'sup',
+                                title: 'Stress ulcer prophylaxis plan',
+                                subtitle: 'Consider risk factors for GI bleeding',
+                                considerations: 'Risk factors: Mechanical ventilation expected >48h? Coagulopathy or anticoagulant use? Shock / hypotension? Fasting / no enteral nutrition? Steroid use? Traumatic brain injury? Renal failure?',
+                                deepDive: {
+                                    title: 'Stress Ulcer Prophylaxis',
+                                    content: `
+                                        <h3>The rationale</h3>
+                                        <p>Almost all ICU patients are at some risk of stress ulceration, which can cause clinically significant upper GI bleeding — associated with need for transfusion, morbidity, mortality, and longer ICU stays. Pharmacological prophylaxis has been demonstrated to reduce GI bleeding and is cheap and widely available.</p>
+                                        <h3>The trade-offs</h3>
+                                        <p>Acid suppression increases risk of non-sterile aspiration (and therefore nosocomial pneumonia), C. difficile infection, interstitial nephritis, and LFT derangement. PPI is sometimes continued long-term unnecessarily after discharge.</p>
+                                        <h3>Three strategies to prevent stress ulceration</h3>
+                                        <ul>
+                                            <li>Prevent gastric ischaemia (i.e., avoid hypotension — treat the cause)</li>
+                                            <li>Increase gastric pH — PPI (most common), H2 receptor antagonist, antacids, sucralfate</li>
+                                            <li>Enteral feeding — may reduce the need for pharmacological prophylaxis in lower-risk patients</li>
+                                        </ul>
+                                        <h3>PPI vs H2 receptor antagonist</h3>
+                                        <table class="comparison-table">
+                                            <tr>
+                                                <th></th>
+                                                <th>PPI</th>
+                                                <th>H2RA</th>
+                                            </tr>
+                                            <tr>
+                                                <td>Efficacy</td>
+                                                <td>Slightly more effective at reducing GI bleeding</td>
+                                                <td>Less effective than PPI</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Renal</td>
+                                                <td>Interstitial nephritis risk</td>
+                                                <td>Needs dose adjustment in renal failure</td>
+                                            </tr>
+                                            <tr>
+                                                <td>GI</td>
+                                                <td>C. difficile risk, GI upset</td>
+                                                <td>Less GI side effect profile</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Other</td>
+                                                <td>Headaches; long-term: fractures, ↓Mg, ↓Ca</td>
+                                                <td>Tolerance develops over time</td>
+                                            </tr>
+                                        </table>
+                                        <div class="evidence-box">
+                                            <p><strong>Key trials:</strong></p>
+                                            <p><strong>REVISE (2024)</strong> — Adults intubated in ICU. PPI vs placebo. PPI reduced clinically significant GI bleeds (NNT 40) with no difference in mortality, pneumonia, C. diff, or need for RRT. Notably, ~90% of patients were enterally fed, suggesting PPI has additional benefit beyond enteral feeding alone.</p>
+                                            <p><strong>PEPTIC (2020)</strong> — Ventilated ICU patients. PPI vs H2RA. PPIs slightly more effective at reducing GI bleeding. No effect on mortality, ICU LOS, or C. diff. However, the PPI group had higher mortality that nearly reached significance — and <em>was</em> significant in the subgroup of cardiac surgical patients.</p>
+                                            <p><strong>SUP-ICU (2018)</strong> — ICU patients at specific risk of stress ulceration. PPI vs placebo. PPI reduced rate of clinically significant GI bleeding. No effect on mortality.</p>
+                                        </div>
+                                        <div class="clinical-pearl">
+                                            <p><strong>Clinical pearl for cardiac surgical patients:</strong> The PEPTIC finding of increased mortality with PPI in cardiac surgical patients specifically is worth noting. Some units use H2RA preferentially in this population, though this remains debated. Discuss with your unit's standard practice.</p>
+                                        </div>
+                                    `
+                                }
+                            },
+                            {
+                                id: 'bowel',
+                                title: 'Aperients plan',
+                                subtitle: 'Prophylactic bowel care',
+                                considerations: 'Most ICU patients become constipated (opioids, immobility, fasting). Commence aperients early — prophylactic rather than reactive. Ensure bowel chart is being maintained.',
+                                deepDive: null
+                            }
+                        ]
+                    },
+                    {
+                        id: 'targets',
+                        title: 'Goals & Targets',
+                        isTargets: true,
+                        items: [
+                            {
+                                id: 'map',
+                                parameter: 'MAP',
+                                range: '>65 mmHg, sBP <140',
+                                nudge: 'Check surgeon-specified targets for this patient',
+                                deepDive: {
+                                    title: 'MAP Targets Post-CABG',
+                                    content: `
+                                        <p>Maintaining MAP >65 ensures adequate organ perfusion. Upper limit of sBP <140 protects fresh anastomoses and reduces bleeding risk.</p>
+                                        <p>These are starting points — individual patient factors may alter targets:</p>
+                                        <ul>
+                                            <li>Pre-existing hypertension may require higher targets</li>
+                                            <li>Graft type (vein grafts may be more sensitive to hypertension)</li>
+                                            <li>Surgeon-specified targets for this specific patient</li>
+                                        </ul>
+                                    `
+                                }
+                            },
+                            {
+                                id: 'ci',
+                                parameter: 'Cardiac index',
+                                range: '2.2 – 2.8 L/min/m²',
+                                nudge: 'Measure when warm and stable. Notify if <2.2',
+                                deepDive: {
+                                    title: 'Cardiac Index and LCOS',
+                                    content: `
+                                        <p>Low cardiac output syndrome (CI <2.2) is the most common serious complication after cardiac surgery.</p>
+                                        <p>Early detection and treatment improves outcomes:</p>
+                                        <ul>
+                                            <li>Optimise preload first</li>
+                                            <li>Then inotropes if needed</li>
+                                            <li>Consider mechanical support (IABP, ECMO) if refractory</li>
+                                        </ul>
+                                    `
+                                }
+                            },
+                            {
+                                id: 'spo2',
+                                parameter: 'SpO₂',
+                                range: '92–96%',
+                                nudge: 'Avoid hyperoxia (emerging evidence of harm with liberal O₂ targets post-cardiac surgery)',
+                                deepDive: null
+                            },
+                            {
+                                id: 'potassium',
+                                parameter: 'Potassium',
+                                range: '4.0 – 4.5 mmol/L',
+                                nudge: 'Recent evidence challenges tight K+ control — see TIGHT-K',
+                                deepDive: {
+                                    title: 'Potassium Targets Post-CABG',
+                                    content: `
+                                        <h3>The traditional rationale</h3>
+                                        <p>Tight K+ control (maintaining >4.5 mmol/L) post-cardiac surgery has been widespread practice to reduce arrhythmia risk, particularly atrial fibrillation (which occurs in ~25-40% of post-CABG patients). Hypokalaemia lowers the arrhythmia threshold. This was based on physiological reasoning and observational data rather than robust RCT evidence.</p>
+                                        <h3>TIGHT-K (JAMA 2024) — the practice-changing trial</h3>
+                                        <p>This multicentre RCT (1,690 patients, 23 centres in UK and Germany) compared tight K+ control (supplement if K+ <4.5 mEq/L) versus relaxed control (supplement only if K+ <3.6 mEq/L) in patients after isolated CABG. The primary endpoint was new-onset AF within 120 hours of surgery.</p>
+                                        <div class="evidence-box">
+                                            <p><strong>Result: Relaxed control was non-inferior to tight control.</strong></p>
+                                            <p>AF occurred in 27.8% (relaxed) vs 26.2% (tight) — no meaningful difference. There was no difference in other arrhythmias, mortality (in-hospital or 6-month), or ICU/hospital length of stay. Relaxed control was associated with significantly less potassium supplementation, reduced nursing workload, and lower cost.</p>
+                                        </div>
+                                        <div class="clinical-pearl">
+                                            <p><strong>Clinical implication:</strong> The widespread practice of aggressively supplementing K+ to >4.5 after CABG appears unnecessary for AF prevention. A relaxed strategy — supplementing only when K+ falls below the lower limit of normal — is safe and equally effective. However, this is a single trial, and your unit's practice may not yet have updated. Follow local protocols, but be aware that the evidence base for tight K+ control is now weaker than previously assumed.</p>
+                                        </div>
+                                        <p class="reference">Reference: O'Brien B et al. TIGHT K Randomized Clinical Trial. JAMA 2024;332:979-988.</p>
+                                    `
+                                }
+                            },
+                            {
+                                id: 'magnesium',
+                                parameter: 'Magnesium',
+                                range: '1.0 – 2.0 mmol/L',
+                                nudge: 'Hypomagnesaemia common post-bypass and associated with AF',
+                                deepDive: {
+                                    title: 'Magnesium and AF Prevention',
+                                    content: `
+                                        <p>Hypomagnesaemia is common post-bypass (haemodilution, diuresis) and independently associated with AF.</p>
+                                        <p>Magnesium supplementation post-cardiac surgery is associated with reduced AF incidence in some meta-analyses, though the effect size varies.</p>
+                                        <p>Replacing to normal range is universally accepted; whether supranormal supplementation offers additional benefit is debated.</p>
+                                    `
+                                }
+                            },
+                            {
+                                id: 'temp',
+                                parameter: 'Temperature',
+                                range: '≥36.0°C',
+                                nudge: 'Hypothermia impairs coagulation, increases bleeding, causes shivering (↑O₂ consumption)',
+                                deepDive: null
+                            },
+                            {
+                                id: 'glucose',
+                                parameter: 'Glucose',
+                                range: '6–10 mmol/L',
+                                nudge: 'Stress hyperglycaemia common. Avoid hypoglycaemia.',
+                                deepDive: {
+                                    title: 'Glycaemic Control Post-Cardiac Surgery',
+                                    content: `
+                                        <p>Hyperglycaemia post-cardiac surgery is associated with increased infection risk (particularly sternal wound infections) and worse outcomes.</p>
+                                        <p>The optimal target range is debated (NICE-SUGAR suggests avoiding very tight control <6.0 due to hypoglycaemia risk), but most units aim for 6-10 mmol/L.</p>
+                                        <p>Insulin infusion is standard while on vasopressors or nil by mouth.</p>
+                                    `
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        id: 'nutrition',
+                        title: 'Nutrition',
+                        items: [
+                            {
+                                id: 'enteral',
+                                title: 'Enteral feeding plan',
+                                subtitle: 'When to start, rate, and goals',
+                                considerations: 'Start when haemodynamically stable, not requiring escalating vasopressors. Early enteral nutrition (within 24-48h) is preferred when safe. Was the patient malnourished pre-operatively? Diabetic? Refeeding risk? Dietitian referral if expected prolonged ICU stay or nutritional risk.',
+                                deepDive: null
+                            },
+                            {
+                                id: 'glycaemic-plan',
+                                title: 'Glycaemic management plan',
+                                subtitle: 'Insulin infusion while nil by mouth / on enteral feeding',
+                                considerations: 'Transition plan to subcutaneous insulin when eating',
+                                deepDive: null
+                            }
+                        ]
+                    },
+                    {
+                        id: 'goals-of-care',
+                        title: 'Goals of Care',
+                        items: [
+                            {
+                                id: 'resus-status',
+                                title: 'Resuscitation status confirmed',
+                                subtitle: 'Full resuscitation appropriate for most post-cardiac surgery patients',
+                                considerations: 'Was there a pre-operative goals of care discussion? Any advance care directives or AHD? Is the clinical trajectory as expected, or has there been a significant intra-operative complication that changes the picture?',
+                                deepDive: null
+                            },
+                            {
+                                id: 'ceiling',
+                                title: 'Ceiling of care considered',
+                                subtitle: 'Early consideration avoids rushed decisions later',
+                                considerations: 'Would this patient be a candidate for ECMO if they developed refractory cardiogenic shock? This doesn\'t need to be decided now, but thinking about it early avoids rushed decisions later.',
+                                deepDive: null
+                            }
+                        ]
+                    },
+                    {
+                        id: 'communication',
+                        title: 'Communication',
+                        items: [
+                            {
+                                id: 'family',
+                                title: 'Family / NOK updated',
+                                subtitle: 'Who has been updated and what were they told',
+                                considerations: 'When is the next update planned? Family expectations: typical post-CABG course (intubated for hours, not days; drains, lines, pacing wires can look alarming).',
+                                deepDive: null
+                            },
+                            {
+                                id: 'home-team',
+                                title: 'Home team / referring team updated',
+                                subtitle: 'Who referred this patient?',
+                                considerations: 'For emergency CABG from cardiology: update on operative findings and plan.',
+                                deepDive: null
+                            },
+                            {
+                                id: 'outstanding',
+                                title: 'Outstanding results or pending reviews',
+                                subtitle: 'Any pending investigations or consultations',
+                                considerations: 'Any intra-operative cultures sent? Histology? Pending imaging? Any specialist reviews requested?',
+                                deepDive: null
+                            }
+                        ]
+                    }
                 ]
             },
-            {
-                id: 'clinical',
-                title: 'Clinical Assessment',
-                icon: 'vitals',
-                items: [
-                    { id: 'vitals', label: 'Vital signs recorded', hint: 'HR, BP, RR, SpO2, Temp' },
-                    { id: 'weight', label: 'Weight measured', hint: 'For medication dosing' },
-                    { id: 'medication-reconciliation', label: 'Medication reconciliation', hint: 'Review home medications' },
-                    { id: 'allergies', label: 'Allergies documented', hint: 'Including reactions' },
-                    { id: 'fall-risk', label: 'Fall risk assessment', hint: 'Apply precautions if needed' }
-                ]
+            sah: {
+                id: 'sah',
+                title: 'SAH / Intracranial Bleed',
+                shortTitle: 'SAH',
+                emoji: '🧠',
+                subtitle: 'Neurocritical care admission',
+                available: false
             },
-            {
-                id: 'orders',
-                title: 'Orders & Plans',
-                icon: 'clipboard',
-                items: [
-                    { id: 'admission-orders', label: 'Admission orders placed', hint: 'Diet, activity, monitoring' },
-                    { id: 'vte-prophylaxis', label: 'VTE prophylaxis ordered', hint: 'Unless contraindicated' },
-                    { id: 'labs', label: 'Admission labs ordered', hint: 'Per protocol or indication' },
-                    { id: 'imaging', label: 'Imaging ordered', hint: 'If indicated' }
-                ]
+            trauma: {
+                id: 'trauma',
+                title: 'Trauma',
+                shortTitle: 'Trauma',
+                emoji: '🚑',
+                subtitle: 'Major trauma admission',
+                available: false
             },
-            {
-                id: 'communication',
-                title: 'Communication',
-                icon: 'chat',
-                items: [
-                    { id: 'patient-oriented', label: 'Patient oriented to room', hint: 'Call bell, bathroom, visiting hours' },
-                    { id: 'family-notified', label: 'Family/NOK notified', hint: 'Contact details confirmed' },
-                    { id: 'handover', label: 'Handover completed', hint: 'To admitting team' }
-                ]
-            }
-        ];
-
-        // Icons
-        const CheckIcon = React.memo(function CheckIcon() {
-            return React.createElement('svg', {
-                viewBox: '0 0 24 24',
-                fill: 'none',
-                stroke: 'currentColor',
-                strokeWidth: 3,
-                strokeLinecap: 'round',
-                strokeLinejoin: 'round'
-            }, React.createElement('polyline', { points: '20 6 9 17 4 12' }));
-        });
-
-        const DocIcon = React.memo(function DocIcon() {
-            return React.createElement('svg', {
-                width: 20,
-                height: 20,
-                viewBox: '0 0 24 24',
-                fill: 'none',
-                stroke: 'var(--accent)',
-                strokeWidth: 2,
-                strokeLinecap: 'round',
-                strokeLinejoin: 'round'
+            sepsis: {
+                id: 'sepsis',
+                title: 'Sepsis / Septic Shock',
+                shortTitle: 'Sepsis',
+                emoji: '🦠',
+                subtitle: 'Sepsis pathway admission',
+                available: false
             },
-                React.createElement('path', { d: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' }),
-                React.createElement('polyline', { points: '14 2 14 8 20 8' }),
-                React.createElement('line', { x1: 16, y1: 13, x2: 8, y2: 13 }),
-                React.createElement('line', { x1: 16, y1: 17, x2: 8, y2: 17 })
-            );
-        });
-
-        const VitalsIcon = React.memo(function VitalsIcon() {
-            return React.createElement('svg', {
-                width: 20,
-                height: 20,
-                viewBox: '0 0 24 24',
-                fill: 'none',
-                stroke: 'var(--accent)',
-                strokeWidth: 2,
-                strokeLinecap: 'round',
-                strokeLinejoin: 'round'
-            },
-                React.createElement('path', { d: 'M22 12h-4l-3 9L9 3l-3 9H2' })
-            );
-        });
-
-        const ClipboardIcon = React.memo(function ClipboardIcon() {
-            return React.createElement('svg', {
-                width: 20,
-                height: 20,
-                viewBox: '0 0 24 24',
-                fill: 'none',
-                stroke: 'var(--accent)',
-                strokeWidth: 2,
-                strokeLinecap: 'round',
-                strokeLinejoin: 'round'
-            },
-                React.createElement('path', { d: 'M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2' }),
-                React.createElement('rect', { x: 8, y: 2, width: 8, height: 4, rx: 1, ry: 1 })
-            );
-        });
-
-        const ChatIcon = React.memo(function ChatIcon() {
-            return React.createElement('svg', {
-                width: 20,
-                height: 20,
-                viewBox: '0 0 24 24',
-                fill: 'none',
-                stroke: 'var(--accent)',
-                strokeWidth: 2,
-                strokeLinecap: 'round',
-                strokeLinejoin: 'round'
-            },
-                React.createElement('path', { d: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z' })
-            );
-        });
-
-        const getIcon = function(iconName) {
-            switch(iconName) {
-                case 'doc': return React.createElement(DocIcon);
-                case 'vitals': return React.createElement(VitalsIcon);
-                case 'clipboard': return React.createElement(ClipboardIcon);
-                case 'chat': return React.createElement(ChatIcon);
-                default: return null;
+            postArrest: {
+                id: 'postArrest',
+                title: 'Post-Cardiac Arrest',
+                shortTitle: 'Post-Arrest',
+                emoji: '⚡',
+                subtitle: 'Post-resuscitation care',
+                available: false
             }
         };
 
-        // Checkbox component
-        const Checkbox = React.memo(function Checkbox({ checked, onChange }) {
-            return React.createElement('div', {
-                className: 'checkbox' + (checked ? ' checked' : ''),
-                onClick: onChange
-            }, React.createElement(CheckIcon));
-        });
+        // ============================================================
+        // STATE
+        // ============================================================
+        const state = {
+            currentScreen: 'home',
+            currentCondition: null,
+            currentTab: 'checklist',
+            disclaimerAccepted: false,
+            expandedHandoverSections: new Set(),
+            expandedDomains: new Set(),
+            checkedItems: new Set(),
+            reviewedTargets: new Set(),
+            activeBottomSheet: null
+        };
 
-        // Checklist item component
-        const ChecklistItem = React.memo(function ChecklistItem({ item, checked, onToggle }) {
-            return React.createElement('div', { className: 'checklist-item' },
-                React.createElement(Checkbox, { checked: checked, onChange: onToggle }),
-                React.createElement('div', { className: 'checklist-content' },
-                    React.createElement('div', { className: 'checklist-label' }, item.label),
-                    item.hint && React.createElement('div', { className: 'checklist-hint' }, item.hint)
-                )
-            );
-        });
+        // ============================================================
+        // RENDERING
+        // ============================================================
+        function renderConditionCards() {
+            const container = document.getElementById('conditionCards');
+            const conditionOrder = ['cabg', 'sah', 'trauma', 'sepsis', 'postArrest'];
 
-        // Section card component
-        const SectionCard = React.memo(function SectionCard({ section, checkedItems, onToggle, staggerClass }) {
-            var sectionItems = section.items;
-            var completedCount = sectionItems.filter(function(item) { return checkedItems[item.id]; }).length;
-            var totalCount = sectionItems.length;
-            var progress = (completedCount / totalCount) * 100;
+            container.innerHTML = conditionOrder.map(id => {
+                const c = CONDITIONS[id];
+                const comingSoon = !c.available;
+                return `
+                    <div class="condition-card ${comingSoon ? 'coming-soon' : ''}"
+                         ${comingSoon ? '' : `onclick="selectCondition('${id}')"`}>
+                        <div class="condition-icon">${c.emoji}</div>
+                        <div class="condition-info">
+                            <div class="condition-title">
+                                ${c.title}
+                                ${comingSoon ? '<span class="coming-soon-badge">Coming soon</span>' : ''}
+                            </div>
+                            <div class="condition-subtitle">${c.subtitle}</div>
+                        </div>
+                        ${comingSoon ? '' : '<div class="condition-chevron">›</div>'}
+                    </div>
+                `;
+            }).join('');
+        }
 
-            return React.createElement('div', { className: 'card animate-in ' + staggerClass },
-                React.createElement('div', { className: 'card-title' },
-                    getIcon(section.icon),
-                    section.title
-                ),
-                sectionItems.map(function(item) {
-                    return React.createElement(ChecklistItem, {
-                        key: item.id,
-                        item: item,
-                        checked: !!checkedItems[item.id],
-                        onToggle: function() { onToggle(item.id); }
+        function renderHandoverGuide() {
+            const condition = CONDITIONS[state.currentCondition];
+            const container = document.getElementById('handoverContent');
+
+            container.innerHTML = condition.handoverSections.map(section => {
+                const isExpanded = state.expandedHandoverSections.has(section.id);
+                return `
+                    <div class="handover-card ${isExpanded ? 'expanded' : ''}" id="handover-${section.id}">
+                        <div class="handover-header" onclick="toggleHandoverSection('${section.id}')">
+                            <div class="handover-number">${section.number}</div>
+                            <div class="handover-titles">
+                                <div class="handover-title">${section.title}</div>
+                                <div class="handover-prompt">${section.prompt}</div>
+                            </div>
+                            <div class="handover-chevron">▾</div>
+                        </div>
+                        <div class="handover-content">
+                            <div class="considerations-label">Consider</div>
+                            ${section.considerations.map(c => `<div class="consideration-item">${c}</div>`).join('')}
+                            ${section.deepDive ? `
+                                <button class="deep-dive-btn" onclick="openSheet('${escapeHtml(section.deepDive.title)}', 'handover', '${section.id}')">
+                                    <div class="deep-dive-icon">ℹ</div>
+                                    <div class="deep-dive-text">
+                                        <div class="deep-dive-title">${section.deepDive.title}</div>
+                                        <div class="deep-dive-subtitle">Tap for evidence & detail</div>
+                                    </div>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderChecklist() {
+            const condition = CONDITIONS[state.currentCondition];
+            const container = document.getElementById('checklistContent');
+
+            // Calculate progress
+            let totalItems = 0;
+            let checkedCount = 0;
+            let completedDomains = 0;
+
+            condition.checklistDomains.forEach(domain => {
+                let domainTotal = 0;
+                let domainChecked = 0;
+
+                if (domain.isTargets) {
+                    domainTotal = domain.items.length;
+                    domain.items.forEach(item => {
+                        if (state.reviewedTargets.has(item.id)) domainChecked++;
                     });
-                }),
-                React.createElement('div', { className: 'progress-bar' },
-                    React.createElement('div', { className: 'progress-fill', style: { width: progress + '%' } })
-                ),
-                React.createElement('div', { className: 'progress-text' }, completedCount + '/' + totalCount + ' complete')
-            );
-        });
-
-        // Main App component
-        function App() {
-            var savedState = React.useMemo(function() {
-                try {
-                    return JSON.parse(localStorage.getItem('admissionChecklist') || '{}');
-                } catch(e) {
-                    return {};
+                } else if (domain.subsections) {
+                    domain.subsections.forEach(sub => {
+                        domainTotal += sub.items.length;
+                        sub.items.forEach(item => {
+                            if (state.checkedItems.has(item.id)) domainChecked++;
+                        });
+                    });
+                } else {
+                    domainTotal = domain.items.length;
+                    domain.items.forEach(item => {
+                        if (state.checkedItems.has(item.id)) domainChecked++;
+                    });
                 }
-            }, []);
 
-            var _state = React.useState(savedState);
-            var checkedItems = _state[0];
-            var setCheckedItems = _state[1];
+                totalItems += domainTotal;
+                checkedCount += domainChecked;
+                if (domainChecked === domainTotal && domainTotal > 0) completedDomains++;
+            });
 
-            var handleToggle = React.useCallback(function(itemId) {
-                setCheckedItems(function(prev) {
-                    var newState = Object.assign({}, prev);
-                    newState[itemId] = !prev[itemId];
-                    localStorage.setItem('admissionChecklist', JSON.stringify(newState));
-                    return newState;
-                });
-            }, []);
+            const progressPercent = totalItems > 0 ? (checkedCount / totalItems) * 100 : 0;
 
-            var handleReset = React.useCallback(function() {
-                setCheckedItems({});
-                localStorage.removeItem('admissionChecklist');
-            }, []);
-
-            var totalItems = CHECKLIST_SECTIONS.reduce(function(sum, section) {
-                return sum + section.items.length;
-            }, 0);
-
-            var completedItems = Object.values(checkedItems).filter(Boolean).length;
-            var overallProgress = Math.round((completedItems / totalItems) * 100);
-
-            return React.createElement('div', { className: 'app-container' },
-                React.createElement('div', { className: 'header animate-in' },
-                    React.createElement('h1', null, 'Admission Checklist'),
-                    React.createElement('p', null, overallProgress + '% complete (' + completedItems + '/' + totalItems + ' items)')
-                ),
-                CHECKLIST_SECTIONS.map(function(section, index) {
-                    return React.createElement(SectionCard, {
-                        key: section.id,
-                        section: section,
-                        checkedItems: checkedItems,
-                        onToggle: handleToggle,
-                        staggerClass: 'stagger-' + (index + 1)
-                    });
-                }),
-                React.createElement('button', {
-                    className: 'reset-btn animate-in stagger-4',
-                    onClick: handleReset
-                }, 'Reset Checklist')
-            );
-        }
-
-        // Service Worker for offline support
-        if ('serviceWorker' in navigator) {
-            var swCode = `
-                var CACHE_NAME = 'admission-checklist-v1';
-                self.addEventListener('install', function(e) {
-                    e.waitUntil(
-                        caches.open(CACHE_NAME).then(function(cache) {
-                            return cache.addAll([location.href]);
-                        })
-                    );
-                    self.skipWaiting();
-                });
-                self.addEventListener('fetch', function(e) {
-                    e.respondWith(
-                        fetch(e.request).catch(function() {
-                            return caches.match(e.request);
-                        })
-                    );
-                });
+            let html = `
+                <div class="progress-summary">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" style="width: ${progressPercent}%"></div>
+                    </div>
+                    <div class="progress-text">${completedDomains} of ${condition.checklistDomains.length} domains reviewed</div>
+                </div>
             `;
-            var blob = new Blob([swCode], { type: 'application/javascript' });
-            navigator.serviceWorker.register(URL.createObjectURL(blob), { scope: location.pathname })
-                .catch(function() {});
+
+            html += condition.checklistDomains.map(domain => {
+                const isExpanded = state.expandedDomains.has(domain.id);
+
+                // Calculate domain progress
+                let domainTotal = 0;
+                let domainChecked = 0;
+
+                if (domain.isTargets) {
+                    domainTotal = domain.items.length;
+                    domain.items.forEach(item => {
+                        if (state.reviewedTargets.has(item.id)) domainChecked++;
+                    });
+                } else if (domain.subsections) {
+                    domain.subsections.forEach(sub => {
+                        domainTotal += sub.items.length;
+                        sub.items.forEach(item => {
+                            if (state.checkedItems.has(item.id)) domainChecked++;
+                        });
+                    });
+                } else {
+                    domainTotal = domain.items.length;
+                    domain.items.forEach(item => {
+                        if (state.checkedItems.has(item.id)) domainChecked++;
+                    });
+                }
+
+                const isComplete = domainChecked === domainTotal && domainTotal > 0;
+                const progressText = isComplete ? '✓' : `${domainChecked}/${domainTotal}`;
+
+                let contentHtml = '';
+
+                if (domain.isTargets) {
+                    // Render as target cards
+                    contentHtml = domain.items.map(item => {
+                        const reviewed = state.reviewedTargets.has(item.id);
+                        return `
+                            <div class="target-card">
+                                <div class="target-header">
+                                    <div class="target-param">${item.parameter}</div>
+                                    ${item.deepDive ? `<button class="checklist-info-btn" onclick="openSheet('${escapeHtml(item.deepDive.title)}', 'target', '${item.id}')">ℹ</button>` : ''}
+                                </div>
+                                <div class="target-range">${item.range}</div>
+                                <div class="target-nudge">${item.nudge}</div>
+                                <div class="target-footer">
+                                    <label class="target-reviewed" onclick="toggleTarget('${item.id}')">
+                                        <div class="checkbox ${reviewed ? 'checked' : ''}"></div>
+                                        <span>Reviewed</span>
+                                    </label>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else if (domain.subsections) {
+                    // Render with subsection headers
+                    contentHtml = domain.subsections.map(sub => `
+                        <div class="subsection-header">${sub.title}</div>
+                        ${sub.items.map(item => renderChecklistItem(item)).join('')}
+                    `).join('');
+                } else {
+                    // Render regular items
+                    contentHtml = domain.items.map(item => renderChecklistItem(item)).join('');
+                }
+
+                return `
+                    <div class="domain-card ${isExpanded ? 'expanded' : ''}" id="domain-${domain.id}">
+                        <div class="domain-header" onclick="toggleDomain('${domain.id}')">
+                            <div class="domain-title">${domain.title}</div>
+                            <div class="domain-right">
+                                <div class="domain-progress ${isComplete ? 'complete' : ''}">${progressText}</div>
+                                <div class="domain-chevron">▾</div>
+                            </div>
+                        </div>
+                        <div class="domain-content">
+                            ${domain.isTargets ? `<div style="padding: 12px 16px;">${contentHtml}</div>` : contentHtml}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            html += `<button class="reset-btn" onclick="showResetConfirm()">Reset checklist</button>`;
+
+            container.innerHTML = html;
         }
 
-        // Render
-        var root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(React.createElement(App));
+        function renderChecklistItem(item) {
+            const checked = state.checkedItems.has(item.id);
+            return `
+                <div class="checklist-item ${checked ? 'checked' : ''}">
+                    <div class="checkbox ${checked ? 'checked' : ''}" onclick="toggleItem('${item.id}')"></div>
+                    <div class="checklist-content">
+                        <div class="checklist-title">${item.title}</div>
+                        ${item.subtitle ? `<div class="checklist-subtitle">${item.subtitle}</div>` : ''}
+                        ${item.considerations ? `<div class="checklist-considerations">${item.considerations}</div>` : ''}
+                    </div>
+                    ${item.deepDive ? `<button class="checklist-info-btn" onclick="openSheet('${escapeHtml(item.deepDive.title)}', 'item', '${item.id}')">ℹ</button>` : ''}
+                </div>
+            `;
+        }
+
+        // ============================================================
+        // NAVIGATION & INTERACTIONS
+        // ============================================================
+        function selectCondition(id) {
+            state.currentCondition = id;
+            state.currentScreen = 'condition';
+            state.currentTab = 'checklist';
+            state.expandedHandoverSections.clear();
+            state.expandedDomains.clear();
+
+            document.getElementById('homeScreen').classList.remove('active');
+            document.getElementById('conditionScreen').classList.add('active');
+            document.getElementById('navTitle').textContent = CONDITIONS[id].shortTitle;
+            document.getElementById('backBtn').classList.remove('hidden');
+            document.getElementById('homeBtn').classList.remove('hidden');
+
+            renderHandoverGuide();
+            renderChecklist();
+            switchTab('checklist');
+        }
+
+        function goBack() {
+            goHome();
+        }
+
+        function goHome() {
+            state.currentScreen = 'home';
+            state.currentCondition = null;
+
+            document.getElementById('conditionScreen').classList.remove('active');
+            document.getElementById('homeScreen').classList.add('active');
+            document.getElementById('navTitle').textContent = 'Admission Checklist';
+            document.getElementById('backBtn').classList.add('hidden');
+            document.getElementById('homeBtn').classList.add('hidden');
+        }
+
+        function switchTab(tab) {
+            state.currentTab = tab;
+
+            document.getElementById('handoverTab').classList.toggle('active', tab === 'handover');
+            document.getElementById('checklistTab').classList.toggle('active', tab === 'checklist');
+            document.getElementById('handoverContent').style.display = tab === 'handover' ? 'block' : 'none';
+            document.getElementById('checklistContent').style.display = tab === 'checklist' ? 'block' : 'none';
+        }
+
+        function toggleHandoverSection(id) {
+            if (state.expandedHandoverSections.has(id)) {
+                state.expandedHandoverSections.delete(id);
+            } else {
+                state.expandedHandoverSections.add(id);
+            }
+
+            const card = document.getElementById(`handover-${id}`);
+            card.classList.toggle('expanded', state.expandedHandoverSections.has(id));
+
+            // Auto-scroll to show expanded content
+            if (state.expandedHandoverSections.has(id)) {
+                setTimeout(() => {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 50);
+            }
+        }
+
+        function toggleDomain(id) {
+            if (state.expandedDomains.has(id)) {
+                state.expandedDomains.delete(id);
+            } else {
+                state.expandedDomains.add(id);
+            }
+
+            const card = document.getElementById(`domain-${id}`);
+            card.classList.toggle('expanded', state.expandedDomains.has(id));
+
+            if (state.expandedDomains.has(id)) {
+                setTimeout(() => {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 50);
+            }
+        }
+
+        function toggleItem(id) {
+            if (state.checkedItems.has(id)) {
+                state.checkedItems.delete(id);
+            } else {
+                state.checkedItems.add(id);
+            }
+            renderChecklist();
+        }
+
+        function toggleTarget(id) {
+            if (state.reviewedTargets.has(id)) {
+                state.reviewedTargets.delete(id);
+            } else {
+                state.reviewedTargets.add(id);
+            }
+            renderChecklist();
+        }
+
+        // ============================================================
+        // BOTTOM SHEET
+        // ============================================================
+        function openSheet(title, type, id) {
+            const condition = CONDITIONS[state.currentCondition];
+            let content = '';
+
+            if (type === 'handover') {
+                const section = condition.handoverSections.find(s => s.id === id);
+                content = section?.deepDive?.content || '';
+            } else if (type === 'item') {
+                // Search through all domains
+                for (const domain of condition.checklistDomains) {
+                    if (domain.subsections) {
+                        for (const sub of domain.subsections) {
+                            const item = sub.items.find(i => i.id === id);
+                            if (item?.deepDive) {
+                                content = item.deepDive.content;
+                                break;
+                            }
+                        }
+                    } else if (domain.items) {
+                        const item = domain.items.find(i => i.id === id);
+                        if (item?.deepDive) {
+                            content = item.deepDive.content;
+                            break;
+                        }
+                    }
+                    if (content) break;
+                }
+            } else if (type === 'target') {
+                const targetDomain = condition.checklistDomains.find(d => d.isTargets);
+                const target = targetDomain?.items.find(i => i.id === id);
+                content = target?.deepDive?.content || '';
+            }
+
+            document.getElementById('sheetTitle').textContent = title;
+            document.getElementById('sheetContent').innerHTML = content;
+            document.getElementById('sheetOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            // Set up touch gestures
+            setupSheetGestures();
+        }
+
+        function closeSheet() {
+            document.getElementById('sheetOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function closeSheetOnOverlay(e) {
+            if (e.target === document.getElementById('sheetOverlay')) {
+                closeSheet();
+            }
+        }
+
+        function setupSheetGestures() {
+            const sheet = document.getElementById('bottomSheet');
+            const handle = document.getElementById('sheetHandle');
+            let startY = 0;
+            let currentY = 0;
+            let isDragging = false;
+
+            function onTouchStart(e) {
+                startY = e.touches[0].clientY;
+                isDragging = true;
+                sheet.style.transition = 'none';
+            }
+
+            function onTouchMove(e) {
+                if (!isDragging) return;
+                currentY = e.touches[0].clientY;
+                const diff = currentY - startY;
+                if (diff > 0) {
+                    sheet.style.transform = `translateY(${diff}px)`;
+                }
+            }
+
+            function onTouchEnd() {
+                if (!isDragging) return;
+                isDragging = false;
+                sheet.style.transition = 'transform 0.3s ease';
+                const diff = currentY - startY;
+                if (diff > 100) {
+                    closeSheet();
+                }
+                sheet.style.transform = '';
+            }
+
+            handle.addEventListener('touchstart', onTouchStart, { passive: true });
+            handle.addEventListener('touchmove', onTouchMove, { passive: true });
+            handle.addEventListener('touchend', onTouchEnd, { passive: true });
+        }
+
+        // ============================================================
+        // DISCLAIMER
+        // ============================================================
+        function toggleDisclaimer() {
+            const checkbox = document.getElementById('disclaimerCheckbox');
+            const btn = document.getElementById('disclaimerBtn');
+            checkbox.classList.toggle('checked');
+            btn.disabled = !checkbox.classList.contains('checked');
+        }
+
+        function acceptDisclaimer() {
+            state.disclaimerAccepted = true;
+            document.getElementById('disclaimerOverlay').classList.add('hidden');
+        }
+
+        function showAbout() {
+            document.getElementById('disclaimerOverlay').classList.remove('hidden');
+            document.getElementById('disclaimerCheckbox').classList.add('checked');
+            document.getElementById('disclaimerBtn').disabled = false;
+        }
+
+        // ============================================================
+        // RESET CONFIRMATION
+        // ============================================================
+        function showResetConfirm() {
+            document.getElementById('confirmOverlay').classList.remove('hidden');
+        }
+
+        function hideConfirm() {
+            document.getElementById('confirmOverlay').classList.add('hidden');
+        }
+
+        function confirmReset() {
+            state.checkedItems.clear();
+            state.reviewedTargets.clear();
+            hideConfirm();
+            renderChecklist();
+        }
+
+        // ============================================================
+        // UTILITIES
+        // ============================================================
+        function escapeHtml(str) {
+            return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
+        }
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            renderConditionCards();
+        });
     </script>
 </body>
 </html>
