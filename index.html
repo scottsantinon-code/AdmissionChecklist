@@ -882,6 +882,119 @@
             margin-bottom: 0;
         }
 
+        .pearl-box {
+            background: rgba(255,159,10,0.08);
+            border-left: 3px solid var(--orange);
+            border-radius: 0 10px 10px 0;
+            padding: 12px 14px;
+            margin: 14px 0;
+            font-size: 14px;
+            color: var(--label-secondary);
+            line-height: 1.5;
+        }
+
+        /* First 5 Minutes Card */
+        .first-five-card {
+            background: var(--bg-grouped);
+            border-radius: 14px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 16px;
+            overflow: hidden;
+            border-left: 3px solid var(--blue);
+        }
+
+        .first-five-header {
+            display: flex;
+            align-items: flex-start;
+            padding: 14px 16px;
+            cursor: pointer;
+            min-height: 44px;
+            gap: 12px;
+        }
+
+        .first-five-header:active {
+            background: var(--fill-secondary);
+        }
+
+        .first-five-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .first-five-titles {
+            flex: 1;
+        }
+
+        .first-five-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--label);
+        }
+
+        .first-five-subtitle {
+            font-size: 14px;
+            color: var(--label-tertiary);
+            margin-top: 2px;
+        }
+
+        .first-five-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .first-five-progress {
+            font-size: 14px;
+            color: var(--label-tertiary);
+        }
+
+        .first-five-progress.complete {
+            color: var(--green);
+        }
+
+        .first-five-chevron {
+            font-size: 14px;
+            color: var(--label-tertiary);
+            transition: transform 0.2s ease;
+        }
+
+        .first-five-card.expanded .first-five-chevron {
+            transform: rotate(180deg);
+        }
+
+        .first-five-content {
+            display: none;
+            border-top: 0.5px solid var(--separator);
+        }
+
+        .first-five-card.expanded .first-five-content {
+            display: block;
+        }
+
+        .first-five-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 14px 16px;
+            gap: 12px;
+            border-bottom: 0.5px solid var(--separator);
+        }
+
+        .first-five-item:last-child {
+            border-bottom: none;
+        }
+
+        .first-five-item.checked .checklist-title {
+            color: var(--label-tertiary);
+        }
+
+        .first-five-why {
+            font-size: 14px;
+            color: var(--label-tertiary);
+            font-style: italic;
+            margin-top: 2px;
+            line-height: 1.4;
+        }
+
         .comparison-table {
             width: 100%;
             border-collapse: collapse;
@@ -1101,6 +1214,9 @@
 
             <!-- Condition Screen -->
             <div class="screen" id="conditionScreen">
+                <!-- First 5 Minutes -->
+                <div id="firstFiveContent"></div>
+
                 <div class="segmented-control">
                     <button class="segment" id="handoverTab" onclick="switchTab('handover')">Handover Guide</button>
                     <button class="segment active" id="checklistTab" onclick="switchTab('checklist')">Checklist</button>
@@ -1167,6 +1283,160 @@
                 emoji: '🫀',
                 subtitle: 'Post-cardiac surgical ICU admission',
                 available: true,
+                firstFiveMinutes: {
+                    title: 'First 5 Minutes',
+                    subtitle: 'Quick checks on patient arrival',
+                    items: [
+                        {
+                            id: 'f5-pupils',
+                            title: 'Check pupils',
+                            why: 'Eyes have been taped throughout surgery — nobody has looked',
+                            considerations: [
+                                'Equal and reactive?',
+                                'Anisocoria could indicate embolic stroke',
+                                'Would change immediate management'
+                            ],
+                            deepDive: {
+                                title: 'Why check pupils immediately?',
+                                content: `
+                                    <p>Cardiac surgery patients are at significant risk of <strong>perioperative stroke</strong>. These patients almost by definition have atherosclerosis — and you've just cross-clamped and cannulated their aorta. The risk of calcium, atheroma, or thrombus embolising to the cerebral circulation is real.</p>
+                                    <p>Throughout the entire operation, the patient's eyes have been <strong>taped shut</strong>. Nobody has checked their pupils since anaesthetic induction. ICU arrival is the first opportunity to detect a neurological event that may have occurred during surgery.</p>
+                                    <h3>What you're looking for</h3>
+                                    <ul>
+                                        <li><strong>Anisocoria</strong> (unequal pupils) — could indicate a large territory stroke with mass effect, or less commonly a posterior communicating artery aneurysm compressed during manipulation</li>
+                                        <li><strong>Bilateral fixed dilated pupils</strong> — catastrophic but must be interpreted in context (residual anaesthetic agents, hypothermia, atropine given intra-operatively)</li>
+                                        <li><strong>Normal equal reactive pupils</strong> — reassuring but does not exclude stroke (many strokes don't cause pupil changes)</li>
+                                    </ul>
+                                    <p><strong>Why it matters right now:</strong> If there is anisocoria suggesting a large stroke, this changes immediate management — you may need urgent CT, neurosurgical consultation, and potentially a change in anticoagulation strategy. Finding this at 2 hours post-arrival rather than at arrival loses critical time.</p>
+                                    <div class="evidence-box">
+                                        <p>Perioperative stroke occurs in approximately 1-5% of CABG patients. Risk factors include aortic atherosclerosis, prolonged bypass time, advanced age, prior cerebrovascular disease, and intra-operative hypotension. The most common mechanism is thromboembolism from aortic manipulation (cross-clamping, cannulation, side-clamping for proximal anastomoses).</p>
+                                    </div>
+                                `
+                            }
+                        },
+                        {
+                            id: 'f5-peripheries',
+                            title: 'Feel peripheries',
+                            why: 'Establish your perfusion baseline for comparison later',
+                            considerations: [
+                                'Warm or cold? Well perfused or mottled?',
+                                'This is your reference point for the next few hours',
+                                'If called for low BP later — are they warmer or cooler than arrival?'
+                            ],
+                            deepDive: {
+                                title: 'Why establish a perfusion baseline?',
+                                content: `
+                                    <p>Post-cardiac surgery patients exist on a haemodynamic spectrum that evolves over hours. At arrival, they are often <strong>cool and vasoconstricted</strong> (hypothermia from bypass, residual anaesthetic effects) or occasionally <strong>warm and vasodilated</strong> (vasoplegia, rewarming).</p>
+                                    <h3>The value of knowing the starting point</h3>
+                                    <p>When you get called 30 minutes later because the blood pressure is 85 systolic, the single most useful piece of information is: <strong>are they warmer or cooler than when they arrived?</strong></p>
+                                    <ul>
+                                        <li><strong>Arrived cool, now warmer, BP dropping</strong> — this is rewarming vasodilatation. The tank hasn't changed, the pipes have gotten bigger. They likely need volume ± vasopressor adjustment. This is expected physiology, not a crisis.</li>
+                                        <li><strong>Arrived warm, now cooler, BP dropping</strong> — this is concerning. Could indicate developing cardiogenic shock (low cardiac output → compensatory vasoconstriction), hypovolaemia from bleeding, or tamponade. Needs urgent assessment.</li>
+                                        <li><strong>Arrived cool, still cool, BP dropping</strong> — think bleeding (check drains), tamponade, or worsening cardiac function.</li>
+                                    </ul>
+                                    <p>Without the baseline, you're interpreting a single data point. With the baseline, you're interpreting a <strong>trajectory</strong> — which is far more informative.</p>
+                                    <div class="pearl-box">
+                                        <strong>Teaching point:</strong> This principle — establishing a reference point so that future assessments have context — applies to the drain check and pacemaker check too. The first 5 minutes is about anchoring your clinical picture so that everything that follows is interpreted against a known starting state.
+                                    </div>
+                                `
+                            }
+                        },
+                        {
+                            id: 'f5-drains',
+                            title: 'Check and mark drains',
+                            why: 'Note volume now so you can quantify bleeding from this point',
+                            considerations: [
+                                'How many drains? Where? (mediastinal, pleural L/R)',
+                                'Current volume in each drain',
+                                'Mark the level with a pen and write the time',
+                                'This is your reference for assessing ongoing blood loss'
+                            ],
+                            deepDive: {
+                                title: 'Establishing a drain baseline',
+                                content: `
+                                    <p>When a cardiac surgical patient arrives in ICU, there is often already some blood in the chest drains from the time between drain insertion and ICU arrival. This is <strong>not ongoing bleeding</strong> — it's blood that was already in the mediastinum and pleural spaces.</p>
+                                    <p><strong>The practical technique:</strong> Note the volume in each drain. Mark the level on the drain chamber with a pen and write the time. From this point forward, you can quantify exactly how much blood has drained <em>since ICU arrival</em>.</p>
+                                    <h3>Why this matters</h3>
+                                    <ul>
+                                        <li>When you (or the nurse) are assessing drain output at 1 hour post-arrival, you need to know how much is new versus how much was already there</li>
+                                        <li>A drain that reads "250 mL total" is very different depending on whether 200 mL was already there on arrival (50 mL/hr — acceptable) or 50 mL was there on arrival (200 mL/hr — call the surgeon)</li>
+                                        <li>Without marking, you lose this distinction entirely</li>
+                                    </ul>
+                                    <h3>Drain output thresholds</h3>
+                                    <p>(Confirm with your surgical team for this patient):</p>
+                                    <ul>
+                                        <li><strong>>100 mL/hr for 2-3 consecutive hours</strong> — typically warrants surgical team notification</li>
+                                        <li><strong>>200 mL in any single hour</strong> — urgent surgical team review</li>
+                                        <li><strong>Sudden cessation of output</strong> — may indicate drain blockage (clot), not cessation of bleeding. Think tamponade if haemodynamics deteriorate.</li>
+                                    </ul>
+                                    <p>Initial output may be higher as pooled mediastinal blood clears. <strong>The trend matters more than a single reading.</strong></p>
+                                `
+                            }
+                        },
+                        {
+                            id: 'f5-pacemaker',
+                            title: 'Check pacemaker mode',
+                            why: "You are now responsible — confirm it's in demand mode",
+                            considerations: [
+                                'Is it in a demand mode (VVI, DDD) or asynchronous (VOO, DOO)?',
+                                'Asynchronous pacing risks R-on-T → VF',
+                                'Check rate, output, sensitivity settings',
+                                'Is the patient currently pacing-dependent?'
+                            ],
+                            deepDive: {
+                                title: 'Why check pacemaker mode immediately?',
+                                content: `
+                                    <p>From the moment you take ownership of this patient from the theatre team, <strong>you are responsible for their pacemaker settings</strong>.</p>
+                                    <h3>The danger of asynchronous mode</h3>
+                                    <p>During surgery, the pacemaker is sometimes set to an <strong>asynchronous mode (VOO or DOO)</strong>. This delivers pacing stimuli at a fixed rate regardless of the patient's intrinsic cardiac activity. In theatre, this makes sense — electrocautery causes electrical interference that would make a demand pacemaker inappropriately inhibit (it "senses" the cautery as cardiac activity and stops pacing when the patient actually needs it).</p>
+                                    <p>But once the patient leaves theatre, <strong>there is no more cautery</strong>. And as the patient rewarms, their intrinsic cardiac rhythm often recovers. In asynchronous mode, the pacemaker continues to fire regardless — and if a pacing spike lands during the <strong>vulnerable period of repolarisation</strong> (the relative refractory period, corresponding to the T wave on ECG), it can trigger <strong>ventricular fibrillation</strong>. This is the <strong>R-on-T phenomenon</strong>.</p>
+                                    <h3>What to do</h3>
+                                    <ul>
+                                        <li>Confirm the mode is <strong>demand</strong> (VVI or DDD) — these modes sense intrinsic activity and only pace when needed</li>
+                                        <li>Check the <strong>rate</strong> (typically 80-90 bpm post-cardiac surgery)</li>
+                                        <li>Check the <strong>output</strong> (mA) — is it capturing? (every pacing spike followed by a QRS)</li>
+                                        <li>Check <strong>sensitivity</strong> — is it appropriately sensing intrinsic beats?</li>
+                                        <li>Note whether the patient is <strong>pacing-dependent</strong> right now (no intrinsic rhythm without the pacemaker) or has their own underlying rhythm</li>
+                                    </ul>
+                                    <div class="pearl-box">
+                                        <strong>Teaching point:</strong> This check takes 5 seconds. The consequence of not checking — VF from R-on-T — is immediately life-threatening. There is no clinical scenario where the risk-benefit calculation favours skipping this.
+                                    </div>
+                                `
+                            }
+                        },
+                        {
+                            id: 'f5-fio2',
+                            title: 'Reduce FiO₂',
+                            why: '100% O₂ promotes absorption atelectasis — reduce to ≤0.7',
+                            considerations: [
+                                'Patients often arrive on FiO₂ 1.0 from theatre',
+                                'Reduce to 0.7-0.8 (or lower if SpO₂ allows)',
+                                'If left on 1.0, absorption atelectasis worsens over time',
+                                'Goal: extubate as early as safely possible'
+                            ],
+                            deepDive: {
+                                title: 'Why reduce FiO₂ immediately?',
+                                content: `
+                                    <p>Post-cardiac surgery patients typically arrive from theatre on <strong>FiO₂ 1.0 (100% oxygen)</strong>. This is reasonable during transport but should be reduced promptly on ICU arrival.</p>
+                                    <h3>The problem: absorption atelectasis</h3>
+                                    <p>Nitrogen normally acts as a "splint gas" in the alveoli. Because nitrogen is poorly absorbed across the alveolar membrane, it stays in the alveolus and helps keep it open. When you deliver 100% oxygen, you wash out all the nitrogen (denitrogenation). In alveoli that are poorly ventilated — and post-cardiac surgery patients have many of these (lung deflation during bypass, diaphragmatic splinting from pain, pleural blood, supine positioning) — the oxygen is absorbed into the blood faster than it can be replenished by ventilation. The alveolus collapses. This is <strong>absorption atelectasis</strong>.</p>
+                                    <h3>Why this matters for cardiac surgery patients specifically</h3>
+                                    <ul>
+                                        <li>They've had their lungs <strong>deflated during bypass</strong> (one or both lungs down)</li>
+                                        <li>They're <strong>paralysed and supine</strong> — dependent lung zones are already prone to atelectasis</li>
+                                        <li>They have <strong>pleural drains and often pleural blood</strong> — compressive atelectasis</li>
+                                        <li>The goal is to <strong>extubate early</strong> (within 6-12 hours) — progressive atelectasis on 100% O₂ works directly against this</li>
+                                    </ul>
+                                    <p><strong>The practical problem:</strong> When the nurses are busy connecting monitors, checking lines, receiving handover, and settling the patient — adjusting the FiO₂ is nobody's first priority. If you don't do it, the patient may sit on FiO₂ 1.0 for an hour or more. This is avoidable harm.</p>
+                                    <p><strong>What to do:</strong> With the nurse's awareness, reduce FiO₂ to 0.7 or lower (titrate to SpO₂ 92-96%). If the patient desaturates, that's useful information — it tells you there's already significant atelectasis or another pulmonary issue that needs attention, rather than being masked by 100% oxygen.</p>
+                                    <div class="evidence-box">
+                                        <p>Enhanced Recovery After Surgery (ERAS) Cardiac guidelines recommend avoiding prolonged hyperoxia post-cardiac surgery. Liberal oxygen therapy has been associated with increased atelectasis, longer ventilation duration, and potentially increased mortality in critically ill patients (IOTA meta-analysis, Lancet 2018). Early FiO₂ reduction is a low-cost, zero-risk intervention that supports the goal of early extubation.</p>
+                                    </div>
+                                `
+                            }
+                        }
+                    ]
+                },
                 handoverSections: [
                     {
                         id: 'indication',
@@ -1946,6 +2216,8 @@
             expandedDomains: new Set(),
             checkedItems: new Set(),
             reviewedTargets: new Set(),
+            firstFiveExpanded: false,
+            checkedFirstFive: new Set(),
             activeBottomSheet: null
         };
 
@@ -1973,6 +2245,54 @@
                     </div>
                 `;
             }).join('');
+        }
+
+        function renderFirstFiveMinutes() {
+            const condition = CONDITIONS[state.currentCondition];
+            const container = document.getElementById('firstFiveContent');
+
+            if (!condition || !condition.firstFiveMinutes) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const f5 = condition.firstFiveMinutes;
+            const items = f5.items;
+            const checkedCount = items.filter(item => state.checkedFirstFive.has(item.id)).length;
+            const isComplete = checkedCount === items.length;
+            const progressText = isComplete ? '✓' : `${checkedCount}/${items.length}`;
+            const isExpanded = state.firstFiveExpanded;
+
+            container.innerHTML = `
+                <div class="first-five-card ${isExpanded ? 'expanded' : ''}" id="firstFiveCard">
+                    <div class="first-five-header" onclick="toggleFirstFive()">
+                        <div class="first-five-icon">⏱</div>
+                        <div class="first-five-titles">
+                            <div class="first-five-title">${f5.title}</div>
+                            <div class="first-five-subtitle">${f5.subtitle}</div>
+                        </div>
+                        <div class="first-five-right">
+                            <div class="first-five-progress ${isComplete ? 'complete' : ''}">${progressText}</div>
+                            <div class="first-five-chevron">▾</div>
+                        </div>
+                    </div>
+                    <div class="first-five-content">
+                        ${items.map(item => {
+                            const checked = state.checkedFirstFive.has(item.id);
+                            return `
+                                <div class="first-five-item ${checked ? 'checked' : ''}">
+                                    <div class="checkbox ${checked ? 'checked' : ''}" onclick="toggleFirstFiveItem('${item.id}')"></div>
+                                    <div class="checklist-content">
+                                        <div class="checklist-title">${item.title}</div>
+                                        <div class="first-five-why">${item.why}</div>
+                                    </div>
+                                    ${item.deepDive ? `<button class="checklist-info-btn" onclick="openSheet('${escapeHtml(item.deepDive.title)}', 'firstFive', '${item.id}')">ℹ</button>` : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
         }
 
         function renderHandoverGuide() {
@@ -2165,6 +2485,7 @@
             state.currentTab = 'checklist';
             state.expandedHandoverSections.clear();
             state.expandedDomains.clear();
+            state.firstFiveExpanded = false;
 
             document.getElementById('homeScreen').classList.remove('active');
             document.getElementById('conditionScreen').classList.add('active');
@@ -2172,6 +2493,7 @@
             document.getElementById('backBtn').classList.remove('hidden');
             document.getElementById('homeBtn').classList.remove('hidden');
 
+            renderFirstFiveMinutes();
             renderHandoverGuide();
             renderChecklist();
             switchTab('checklist');
@@ -2254,6 +2576,27 @@
             renderChecklist();
         }
 
+        function toggleFirstFive() {
+            state.firstFiveExpanded = !state.firstFiveExpanded;
+            const card = document.getElementById('firstFiveCard');
+            card.classList.toggle('expanded', state.firstFiveExpanded);
+
+            if (state.firstFiveExpanded) {
+                setTimeout(() => {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 50);
+            }
+        }
+
+        function toggleFirstFiveItem(id) {
+            if (state.checkedFirstFive.has(id)) {
+                state.checkedFirstFive.delete(id);
+            } else {
+                state.checkedFirstFive.add(id);
+            }
+            renderFirstFiveMinutes();
+        }
+
         // ============================================================
         // BOTTOM SHEET
         // ============================================================
@@ -2288,6 +2631,9 @@
                 const targetDomain = condition.checklistDomains.find(d => d.isTargets);
                 const target = targetDomain?.items.find(i => i.id === id);
                 content = target?.deepDive?.content || '';
+            } else if (type === 'firstFive') {
+                const item = condition.firstFiveMinutes?.items.find(i => i.id === id);
+                content = item?.deepDive?.content || '';
             }
 
             document.getElementById('sheetTitle').textContent = title;
@@ -2383,7 +2729,9 @@
         function confirmReset() {
             state.checkedItems.clear();
             state.reviewedTargets.clear();
+            state.checkedFirstFive.clear();
             hideConfirm();
+            renderFirstFiveMinutes();
             renderChecklist();
         }
 
