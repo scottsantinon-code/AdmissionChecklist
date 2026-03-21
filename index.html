@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Admission Checklist</title>
+    <style>
+        :root {
+            --bg-primary: #FAFAFA;
+            --bg-secondary: #FFFFFF;
+            --bg-tertiary: #F0F0F5;
+            --text-primary: #000000;
+            --text-secondary: #48484A;
+            --text-tertiary: #8E8E93;
+            --accent: #8B5CF6;
+            --accent-light: rgba(139, 92, 246, 0.08);
+            --success: #30D158;
+            --success-light: rgba(48, 209, 88, 0.12);
+            --warning: #F59E0B;
+            --warning-light: rgba(245, 158, 11, 0.12);
+            --error: #FF453A;
+            --error-light: rgba(255, 69, 58, 0.12);
+            --border: rgba(0, 0, 0, 0.04);
+            --border-strong: rgba(0, 0, 0, 0.08);
+            --shadow-sm: 0 0 0 1px rgba(0,0,0,0.03), 0 2px 4px rgba(0,0,0,0.02);
+            --shadow-md: 0 0 0 1px rgba(0,0,0,0.03), 0 4px 12px rgba(0,0,0,0.05);
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 10px;
+            --transition: 0.2s ease;
+            --font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 440px;
+            min-height: 100vh;
+            min-height: 100dvh;
+            background: var(--bg-primary);
+            padding: 16px;
+            padding-top: calc(16px + env(safe-area-inset-top));
+            padding-bottom: calc(32px + env(safe-area-inset-bottom));
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
+        }
+
+        .header p {
+            font-size: 15px;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 2px solid var(--border-strong);
+            background: var(--bg-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .checkbox.checked {
+            background: var(--success);
+            border-color: var(--success);
+        }
+
+        .checkbox svg {
+            width: 14px;
+            height: 14px;
+            color: white;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .checkbox.checked svg {
+            opacity: 1;
+        }
+
+        .checklist-content {
+            flex: 1;
+        }
+
+        .checklist-label {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        .checklist-hint {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 13px;
+            color: var(--text-tertiary);
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        .reset-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: var(--radius-md);
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 8px;
+        }
+
+        .reset-btn:active {
+            transform: scale(0.98);
+            opacity: 0.8;
+        }
+
+        .animate-in {
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stagger-1 { animation-delay: 0.05s; }
+        .stagger-2 { animation-delay: 0.1s; }
+        .stagger-3 { animation-delay: 0.15s; }
+        .stagger-4 { animation-delay: 0.2s; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script>
+        'use strict';
+
+        // Checklist data structure
+        const CHECKLIST_SECTIONS = [
+            {
+                id: 'documentation',
+                title: 'Documentation',
+                icon: 'doc',
+                items: [
+                    { id: 'consent', label: 'Consent forms signed', hint: 'Including procedure consents if applicable' },
+                    { id: 'id-band', label: 'ID band verified', hint: 'Check name, DOB, MRN' },
+                    { id: 'allergy-band', label: 'Allergy band applied', hint: 'If allergies present' },
+                    { id: 'advance-directive', label: 'Advance directive status', hint: 'Document resuscitation status' }
+                ]
+            },
+            {
+                id: 'clinical',
+                title: 'Clinical Assessment',
+                icon: 'vitals',
+                items: [
+                    { id: 'vitals', label: 'Vital signs recorded', hint: 'HR, BP, RR, SpO2, Temp' },
+                    { id: 'weight', label: 'Weight measured', hint: 'For medication dosing' },
+                    { id: 'medication-reconciliation', label: 'Medication reconciliation', hint: 'Review home medications' },
+                    { id: 'allergies', label: 'Allergies documented', hint: 'Including reactions' },
+                    { id: 'fall-risk', label: 'Fall risk assessment', hint: 'Apply precautions if needed' }
+                ]
+            },
+            {
+                id: 'orders',
+                title: 'Orders & Plans',
+                icon: 'clipboard',
+                items: [
+                    { id: 'admission-orders', label: 'Admission orders placed', hint: 'Diet, activity, monitoring' },
+                    { id: 'vte-prophylaxis', label: 'VTE prophylaxis ordered', hint: 'Unless contraindicated' },
+                    { id: 'labs', label: 'Admission labs ordered', hint: 'Per protocol or indication' },
+                    { id: 'imaging', label: 'Imaging ordered', hint: 'If indicated' }
+                ]
+            },
+            {
+                id: 'communication',
+                title: 'Communication',
+                icon: 'chat',
+                items: [
+                    { id: 'patient-oriented', label: 'Patient oriented to room', hint: 'Call bell, bathroom, visiting hours' },
+                    { id: 'family-notified', label: 'Family/NOK notified', hint: 'Contact details confirmed' },
+                    { id: 'handover', label: 'Handover completed', hint: 'To admitting team' }
+                ]
+            }
+        ];
+
+        // Icons
+        const CheckIcon = React.memo(function CheckIcon() {
+            return React.createElement('svg', {
+                viewBox: '0 0 24 24',
+                fill: 'none',
+                stroke: 'currentColor',
+                strokeWidth: 3,
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round'
+            }, React.createElement('polyline', { points: '20 6 9 17 4 12' }));
+        });
+
+        const DocIcon = React.memo(function DocIcon() {
+            return React.createElement('svg', {
+                width: 20,
+                height: 20,
+                viewBox: '0 0 24 24',
+                fill: 'none',
+                stroke: 'var(--accent)',
+                strokeWidth: 2,
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round'
+            },
+                React.createElement('path', { d: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' }),
+                React.createElement('polyline', { points: '14 2 14 8 20 8' }),
+                React.createElement('line', { x1: 16, y1: 13, x2: 8, y2: 13 }),
+                React.createElement('line', { x1: 16, y1: 17, x2: 8, y2: 17 })
+            );
+        });
+
+        const VitalsIcon = React.memo(function VitalsIcon() {
+            return React.createElement('svg', {
+                width: 20,
+                height: 20,
+                viewBox: '0 0 24 24',
+                fill: 'none',
+                stroke: 'var(--accent)',
+                strokeWidth: 2,
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round'
+            },
+                React.createElement('path', { d: 'M22 12h-4l-3 9L9 3l-3 9H2' })
+            );
+        });
+
+        const ClipboardIcon = React.memo(function ClipboardIcon() {
+            return React.createElement('svg', {
+                width: 20,
+                height: 20,
+                viewBox: '0 0 24 24',
+                fill: 'none',
+                stroke: 'var(--accent)',
+                strokeWidth: 2,
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round'
+            },
+                React.createElement('path', { d: 'M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2' }),
+                React.createElement('rect', { x: 8, y: 2, width: 8, height: 4, rx: 1, ry: 1 })
+            );
+        });
+
+        const ChatIcon = React.memo(function ChatIcon() {
+            return React.createElement('svg', {
+                width: 20,
+                height: 20,
+                viewBox: '0 0 24 24',
+                fill: 'none',
+                stroke: 'var(--accent)',
+                strokeWidth: 2,
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round'
+            },
+                React.createElement('path', { d: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z' })
+            );
+        });
+
+        const getIcon = function(iconName) {
+            switch(iconName) {
+                case 'doc': return React.createElement(DocIcon);
+                case 'vitals': return React.createElement(VitalsIcon);
+                case 'clipboard': return React.createElement(ClipboardIcon);
+                case 'chat': return React.createElement(ChatIcon);
+                default: return null;
+            }
+        };
+
+        // Checkbox component
+        const Checkbox = React.memo(function Checkbox({ checked, onChange }) {
+            return React.createElement('div', {
+                className: 'checkbox' + (checked ? ' checked' : ''),
+                onClick: onChange
+            }, React.createElement(CheckIcon));
+        });
+
+        // Checklist item component
+        const ChecklistItem = React.memo(function ChecklistItem({ item, checked, onToggle }) {
+            return React.createElement('div', { className: 'checklist-item' },
+                React.createElement(Checkbox, { checked: checked, onChange: onToggle }),
+                React.createElement('div', { className: 'checklist-content' },
+                    React.createElement('div', { className: 'checklist-label' }, item.label),
+                    item.hint && React.createElement('div', { className: 'checklist-hint' }, item.hint)
+                )
+            );
+        });
+
+        // Section card component
+        const SectionCard = React.memo(function SectionCard({ section, checkedItems, onToggle, staggerClass }) {
+            var sectionItems = section.items;
+            var completedCount = sectionItems.filter(function(item) { return checkedItems[item.id]; }).length;
+            var totalCount = sectionItems.length;
+            var progress = (completedCount / totalCount) * 100;
+
+            return React.createElement('div', { className: 'card animate-in ' + staggerClass },
+                React.createElement('div', { className: 'card-title' },
+                    getIcon(section.icon),
+                    section.title
+                ),
+                sectionItems.map(function(item) {
+                    return React.createElement(ChecklistItem, {
+                        key: item.id,
+                        item: item,
+                        checked: !!checkedItems[item.id],
+                        onToggle: function() { onToggle(item.id); }
+                    });
+                }),
+                React.createElement('div', { className: 'progress-bar' },
+                    React.createElement('div', { className: 'progress-fill', style: { width: progress + '%' } })
+                ),
+                React.createElement('div', { className: 'progress-text' }, completedCount + '/' + totalCount + ' complete')
+            );
+        });
+
+        // Main App component
+        function App() {
+            var savedState = React.useMemo(function() {
+                try {
+                    return JSON.parse(localStorage.getItem('admissionChecklist') || '{}');
+                } catch(e) {
+                    return {};
+                }
+            }, []);
+
+            var _state = React.useState(savedState);
+            var checkedItems = _state[0];
+            var setCheckedItems = _state[1];
+
+            var handleToggle = React.useCallback(function(itemId) {
+                setCheckedItems(function(prev) {
+                    var newState = Object.assign({}, prev);
+                    newState[itemId] = !prev[itemId];
+                    localStorage.setItem('admissionChecklist', JSON.stringify(newState));
+                    return newState;
+                });
+            }, []);
+
+            var handleReset = React.useCallback(function() {
+                setCheckedItems({});
+                localStorage.removeItem('admissionChecklist');
+            }, []);
+
+            var totalItems = CHECKLIST_SECTIONS.reduce(function(sum, section) {
+                return sum + section.items.length;
+            }, 0);
+
+            var completedItems = Object.values(checkedItems).filter(Boolean).length;
+            var overallProgress = Math.round((completedItems / totalItems) * 100);
+
+            return React.createElement('div', { className: 'app-container' },
+                React.createElement('div', { className: 'header animate-in' },
+                    React.createElement('h1', null, 'Admission Checklist'),
+                    React.createElement('p', null, overallProgress + '% complete (' + completedItems + '/' + totalItems + ' items)')
+                ),
+                CHECKLIST_SECTIONS.map(function(section, index) {
+                    return React.createElement(SectionCard, {
+                        key: section.id,
+                        section: section,
+                        checkedItems: checkedItems,
+                        onToggle: handleToggle,
+                        staggerClass: 'stagger-' + (index + 1)
+                    });
+                }),
+                React.createElement('button', {
+                    className: 'reset-btn animate-in stagger-4',
+                    onClick: handleReset
+                }, 'Reset Checklist')
+            );
+        }
+
+        // Service Worker for offline support
+        if ('serviceWorker' in navigator) {
+            var swCode = `
+                var CACHE_NAME = 'admission-checklist-v1';
+                self.addEventListener('install', function(e) {
+                    e.waitUntil(
+                        caches.open(CACHE_NAME).then(function(cache) {
+                            return cache.addAll([location.href]);
+                        })
+                    );
+                    self.skipWaiting();
+                });
+                self.addEventListener('fetch', function(e) {
+                    e.respondWith(
+                        fetch(e.request).catch(function() {
+                            return caches.match(e.request);
+                        })
+                    );
+                });
+            `;
+            var blob = new Blob([swCode], { type: 'application/javascript' });
+            navigator.serviceWorker.register(URL.createObjectURL(blob), { scope: location.pathname })
+                .catch(function() {});
+        }
+
+        // Render
+        var root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(App));
+    </script>
+</body>
+</html>
