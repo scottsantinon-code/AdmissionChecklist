@@ -893,106 +893,43 @@
             line-height: 1.5;
         }
 
-        /* First 5 Minutes Card */
-        .first-five-card {
+        /* First 3 Minutes List */
+        .first-three-list {
             background: var(--bg-grouped);
             border-radius: 14px;
             box-shadow: var(--card-shadow);
-            margin-bottom: 16px;
             overflow: hidden;
-            border-left: 3px solid var(--blue);
         }
 
-        .first-five-header {
-            display: flex;
-            align-items: flex-start;
-            padding: 14px 16px;
-            cursor: pointer;
-            min-height: 44px;
-            gap: 12px;
-        }
-
-        .first-five-header:active {
-            background: var(--fill-secondary);
-        }
-
-        .first-five-icon {
-            font-size: 20px;
-            flex-shrink: 0;
-        }
-
-        .first-five-titles {
-            flex: 1;
-        }
-
-        .first-five-title {
-            font-size: 17px;
-            font-weight: 600;
-            color: var(--label);
-        }
-
-        .first-five-subtitle {
-            font-size: 14px;
-            color: var(--label-tertiary);
-            margin-top: 2px;
-        }
-
-        .first-five-right {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .first-five-progress {
-            font-size: 14px;
-            color: var(--label-tertiary);
-        }
-
-        .first-five-progress.complete {
-            color: var(--green);
-        }
-
-        .first-five-chevron {
-            font-size: 14px;
-            color: var(--label-tertiary);
-            transition: transform 0.2s ease;
-        }
-
-        .first-five-card.expanded .first-five-chevron {
-            transform: rotate(180deg);
-        }
-
-        .first-five-content {
+        /* Layered disclosure for checklist items */
+        .checklist-item .checklist-subtitle,
+        .checklist-item .checklist-questions {
             display: none;
-            border-top: 0.5px solid var(--separator);
         }
 
-        .first-five-card.expanded .first-five-content {
+        .checklist-item.expanded .checklist-subtitle,
+        .checklist-item.expanded .checklist-questions {
             display: block;
         }
 
-        .first-five-item {
-            display: flex;
-            align-items: flex-start;
-            padding: 14px 16px;
-            gap: 12px;
-            border-bottom: 0.5px solid var(--separator);
-        }
-
-        .first-five-item:last-child {
-            border-bottom: none;
-        }
-
-        .first-five-item.checked .checklist-title {
-            color: var(--label-tertiary);
-        }
-
-        .first-five-why {
+        /* Question link */
+        .question-link {
             font-size: 14px;
-            color: var(--label-tertiary);
-            font-style: italic;
-            margin-top: 2px;
-            line-height: 1.4;
+            color: var(--blue);
+            cursor: pointer;
+            padding: 8px 0 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            min-height: 44px;
+        }
+
+        .question-link:active {
+            opacity: 0.6;
+        }
+
+        .checklist-questions {
+            margin-top: 4px;
         }
 
         .comparison-table {
@@ -1217,20 +1154,23 @@
                 </div>
             </div>
 
-            <!-- Condition Screen -->
+            <!-- Condition Sub-chapters Screen -->
             <div class="screen" id="conditionScreen">
-                <!-- First 5 Minutes -->
-                <div id="firstFiveContent"></div>
+                <div id="subchapterCards"></div>
+            </div>
 
-                <div class="segmented-control">
-                    <button class="segment" id="handoverTab" onclick="switchTab('handover')">Handover Guide</button>
-                    <button class="segment active" id="checklistTab" onclick="switchTab('checklist')">Checklist</button>
-                </div>
+            <!-- First 3 Minutes Screen -->
+            <div class="screen" id="firstThreeScreen">
+                <div id="firstThreeContent"></div>
+            </div>
 
-                <!-- Handover Guide Tab -->
-                <div id="handoverContent" style="display: none;"></div>
+            <!-- Handover Screen -->
+            <div class="screen" id="handoverScreen">
+                <div id="handoverContent"></div>
+            </div>
 
-                <!-- Checklist Tab -->
+            <!-- The Admission Plan Screen -->
+            <div class="screen" id="planScreen">
                 <div id="checklistContent"></div>
             </div>
         </main>
@@ -2215,14 +2155,14 @@
         const state = {
             currentScreen: 'home',
             currentCondition: null,
-            currentTab: 'checklist',
+            currentSubchapter: null, // 'firstThree' | 'handover' | 'plan'
             disclaimerAccepted: false,
             expandedHandoverSections: new Set(),
             expandedDomains: new Set(),
             checkedItems: new Set(),
             reviewedTargets: new Set(),
-            firstFiveExpanded: false,
-            checkedFirstFive: new Set(),
+            checkedFirstThree: new Set(),
+            expandedItems: new Set(),
             activeBottomSheet: null
         };
 
@@ -2252,50 +2192,82 @@
             }).join('');
         }
 
-        function renderFirstFiveMinutes() {
+        function renderSubchapterCards() {
             const condition = CONDITIONS[state.currentCondition];
-            const container = document.getElementById('firstFiveContent');
+            const container = document.getElementById('subchapterCards');
+
+            if (!condition) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const subchapters = [
+                {
+                    id: 'firstThree',
+                    emoji: '⏱',
+                    title: 'First 3 Minutes',
+                    subtitle: '5 things to check on arrival'
+                },
+                {
+                    id: 'handover',
+                    emoji: '🩺',
+                    title: 'Understanding the Handover',
+                    subtitle: 'Why you should care about cross-clamp time'
+                },
+                {
+                    id: 'plan',
+                    emoji: '📋',
+                    title: 'The Admission Plan',
+                    subtitle: 'Your structured checklist'
+                }
+            ];
+
+            container.innerHTML = subchapters.map(sub => `
+                <div class="condition-card" onclick="selectSubchapter('${sub.id}')">
+                    <div class="condition-icon">${sub.emoji}</div>
+                    <div class="condition-info">
+                        <div class="condition-title">${sub.title}</div>
+                        <div class="condition-subtitle">${sub.subtitle}</div>
+                    </div>
+                    <div class="condition-chevron">›</div>
+                </div>
+            `).join('');
+        }
+
+        function renderFirstThree() {
+            const condition = CONDITIONS[state.currentCondition];
+            const container = document.getElementById('firstThreeContent');
 
             if (!condition || !condition.firstFiveMinutes) {
                 container.innerHTML = '';
                 return;
             }
 
-            const f5 = condition.firstFiveMinutes;
-            const items = f5.items;
-            const checkedCount = items.filter(item => state.checkedFirstFive.has(item.id)).length;
-            const isComplete = checkedCount === items.length;
-            const progressText = isComplete ? '✓' : `${checkedCount}/${items.length}`;
-            const isExpanded = state.firstFiveExpanded;
+            const f3 = condition.firstFiveMinutes;
+            const items = f3.items;
 
             container.innerHTML = `
-                <div class="first-five-card ${isExpanded ? 'expanded' : ''}" id="firstFiveCard">
-                    <div class="first-five-header" onclick="toggleFirstFive()">
-                        <div class="first-five-icon">⏱</div>
-                        <div class="first-five-titles">
-                            <div class="first-five-title">${f5.title}</div>
-                            <div class="first-five-subtitle">${f5.subtitle}</div>
-                        </div>
-                        <div class="first-five-right">
-                            <div class="first-five-progress ${isComplete ? 'complete' : ''}">${progressText}</div>
-                            <div class="first-five-chevron">▾</div>
-                        </div>
-                    </div>
-                    <div class="first-five-content">
-                        ${items.map(item => {
-                            const checked = state.checkedFirstFive.has(item.id);
-                            return `
-                                <div class="first-five-item ${checked ? 'checked' : ''}">
-                                    <div class="checkbox ${checked ? 'checked' : ''}" onclick="toggleFirstFiveItem('${item.id}')"></div>
-                                    <div class="checklist-content">
-                                        <div class="checklist-title">${item.title}</div>
-                                        <div class="first-five-why">${item.why}</div>
-                                    </div>
-                                    ${item.deepDive ? `<button class="checklist-info-btn" onclick="openSheet('${escapeHtml(item.deepDive.title)}', 'firstFive', '${item.id}')">ℹ</button>` : ''}
+                <div class="first-three-list">
+                    ${items.map(item => {
+                        const checked = state.checkedFirstThree.has(item.id);
+                        const expanded = state.expandedItems.has(item.id);
+                        return `
+                            <div class="checklist-item ${checked ? 'checked' : ''} ${expanded ? 'expanded' : ''}" data-id="${item.id}">
+                                <div class="checkbox ${checked ? 'checked' : ''}" onclick="event.stopPropagation(); toggleFirstThreeItem('${item.id}')"></div>
+                                <div class="checklist-content" onclick="toggleItemExpand('${item.id}')">
+                                    <div class="checklist-title">${item.title}</div>
+                                    <div class="checklist-subtitle">${item.why}</div>
+                                    ${item.deepDive ? `
+                                        <div class="checklist-questions">
+                                            <div class="question-link" onclick="event.stopPropagation(); openSheet('${escapeHtml(item.deepDive.title)}', 'firstThree', '${item.id}')">
+                                                Why does this matter? →
+                                            </div>
+                                        </div>
+                                    ` : ''}
                                 </div>
-                            `;
-                        }).join('')}
-                    </div>
+                            </div>
+                        `;
+                    }).join('')}
                 </div>
             `;
         }
@@ -2487,45 +2459,89 @@
         function selectCondition(id) {
             state.currentCondition = id;
             state.currentScreen = 'condition';
-            state.currentTab = 'checklist';
-            state.expandedHandoverSections.clear();
-            state.expandedDomains.clear();
-            state.firstFiveExpanded = false;
+            state.currentSubchapter = null;
 
             document.getElementById('homeScreen').classList.remove('active');
             document.getElementById('conditionScreen').classList.add('active');
+            document.getElementById('firstThreeScreen').classList.remove('active');
+            document.getElementById('handoverScreen').classList.remove('active');
+            document.getElementById('planScreen').classList.remove('active');
             document.getElementById('navTitle').textContent = CONDITIONS[id].shortTitle;
             document.getElementById('backBtn').classList.remove('hidden');
             document.getElementById('homeBtn').classList.remove('hidden');
 
-            renderFirstFiveMinutes();
-            renderHandoverGuide();
-            renderChecklist();
-            switchTab('checklist');
+            renderSubchapterCards();
+        }
+
+        function selectSubchapter(subId) {
+            state.currentSubchapter = subId;
+            state.expandedItems.clear();
+
+            // Hide all screens
+            document.getElementById('conditionScreen').classList.remove('active');
+            document.getElementById('firstThreeScreen').classList.remove('active');
+            document.getElementById('handoverScreen').classList.remove('active');
+            document.getElementById('planScreen').classList.remove('active');
+
+            if (subId === 'firstThree') {
+                document.getElementById('firstThreeScreen').classList.add('active');
+                document.getElementById('navTitle').textContent = 'First 3 Minutes';
+                renderFirstThree();
+            } else if (subId === 'handover') {
+                document.getElementById('handoverScreen').classList.add('active');
+                document.getElementById('navTitle').textContent = 'Handover';
+                renderHandoverGuide();
+            } else if (subId === 'plan') {
+                document.getElementById('planScreen').classList.add('active');
+                document.getElementById('navTitle').textContent = 'The Plan';
+                renderChecklist();
+            }
         }
 
         function goBack() {
-            goHome();
+            if (state.currentSubchapter) {
+                // Go back from subchapter to condition screen
+                state.currentSubchapter = null;
+                document.getElementById('firstThreeScreen').classList.remove('active');
+                document.getElementById('handoverScreen').classList.remove('active');
+                document.getElementById('planScreen').classList.remove('active');
+                document.getElementById('conditionScreen').classList.add('active');
+                document.getElementById('navTitle').textContent = CONDITIONS[state.currentCondition].shortTitle;
+            } else {
+                // Go back from condition to home
+                goHome();
+            }
         }
 
         function goHome() {
             state.currentScreen = 'home';
             state.currentCondition = null;
+            state.currentSubchapter = null;
 
             document.getElementById('conditionScreen').classList.remove('active');
+            document.getElementById('firstThreeScreen').classList.remove('active');
+            document.getElementById('handoverScreen').classList.remove('active');
+            document.getElementById('planScreen').classList.remove('active');
             document.getElementById('homeScreen').classList.add('active');
             document.getElementById('navTitle').textContent = 'The Plan';
             document.getElementById('backBtn').classList.add('hidden');
             document.getElementById('homeBtn').classList.add('hidden');
         }
 
-        function switchTab(tab) {
-            state.currentTab = tab;
-
-            document.getElementById('handoverTab').classList.toggle('active', tab === 'handover');
-            document.getElementById('checklistTab').classList.toggle('active', tab === 'checklist');
-            document.getElementById('handoverContent').style.display = tab === 'handover' ? 'block' : 'none';
-            document.getElementById('checklistContent').style.display = tab === 'checklist' ? 'block' : 'none';
+        function toggleItemExpand(itemId) {
+            if (state.expandedItems.has(itemId)) {
+                state.expandedItems.delete(itemId);
+            } else {
+                // Collapse all other items first (only one expanded at a time)
+                state.expandedItems.clear();
+                state.expandedItems.add(itemId);
+            }
+            // Re-render the current subchapter
+            if (state.currentSubchapter === 'firstThree') {
+                renderFirstThree();
+            } else if (state.currentSubchapter === 'plan') {
+                renderChecklist();
+            }
         }
 
         function toggleHandoverSection(id) {
@@ -2581,25 +2597,13 @@
             renderChecklist();
         }
 
-        function toggleFirstFive() {
-            state.firstFiveExpanded = !state.firstFiveExpanded;
-            const card = document.getElementById('firstFiveCard');
-            card.classList.toggle('expanded', state.firstFiveExpanded);
-
-            if (state.firstFiveExpanded) {
-                setTimeout(() => {
-                    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }, 50);
-            }
-        }
-
-        function toggleFirstFiveItem(id) {
-            if (state.checkedFirstFive.has(id)) {
-                state.checkedFirstFive.delete(id);
+        function toggleFirstThreeItem(id) {
+            if (state.checkedFirstThree.has(id)) {
+                state.checkedFirstThree.delete(id);
             } else {
-                state.checkedFirstFive.add(id);
+                state.checkedFirstThree.add(id);
             }
-            renderFirstFiveMinutes();
+            renderFirstThree();
         }
 
         // ============================================================
@@ -2636,7 +2640,7 @@
                 const targetDomain = condition.checklistDomains.find(d => d.isTargets);
                 const target = targetDomain?.items.find(i => i.id === id);
                 content = target?.deepDive?.content || '';
-            } else if (type === 'firstFive') {
+            } else if (type === 'firstThree') {
                 const item = condition.firstFiveMinutes?.items.find(i => i.id === id);
                 content = item?.deepDive?.content || '';
             }
@@ -2734,10 +2738,14 @@
         function confirmReset() {
             state.checkedItems.clear();
             state.reviewedTargets.clear();
-            state.checkedFirstFive.clear();
+            state.checkedFirstThree.clear();
+            state.expandedItems.clear();
             hideConfirm();
-            renderFirstFiveMinutes();
-            renderChecklist();
+            if (state.currentSubchapter === 'firstThree') {
+                renderFirstThree();
+            } else if (state.currentSubchapter === 'plan') {
+                renderChecklist();
+            }
         }
 
         // ============================================================
