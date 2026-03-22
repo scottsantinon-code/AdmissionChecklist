@@ -688,19 +688,25 @@
             line-height: 1.4;
             margin-top: 6px;
             display: none;
+            opacity: 0;
         }
 
         .target-row.expanded .target-nudge {
             display: block;
+            opacity: 1;
+            animation: fadeSlideIn 0.2s ease-out;
         }
 
         .target-questions {
             margin-top: 4px;
             display: none;
+            opacity: 0;
         }
 
         .target-row.expanded .target-questions {
             display: block;
+            opacity: 1;
+            animation: fadeSlideIn 0.2s ease-out;
         }
 
         .target-row.reviewed .target-param,
@@ -916,11 +922,25 @@
         .checklist-item .checklist-subtitle,
         .checklist-item .checklist-questions {
             display: none;
+            opacity: 0;
         }
 
         .checklist-item.expanded .checklist-subtitle,
         .checklist-item.expanded .checklist-questions {
             display: block;
+            opacity: 1;
+            animation: fadeSlideIn 0.2s ease-out;
+        }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Question link */
@@ -950,10 +970,13 @@
             line-height: 1.5;
             padding: 4px 0 8px;
             display: none;
+            opacity: 0;
         }
 
         .question-answer.revealed {
             display: block;
+            opacity: 1;
+            animation: fadeSlideIn 0.2s ease-out;
         }
 
         /* Follow-up question */
