@@ -1228,9 +1228,9 @@
                 emoji: '🫀',
                 subtitle: 'Post-cardiac surgical ICU admission',
                 available: true,
-                firstFiveMinutes: {
-                    title: 'First 5 Minutes',
-                    subtitle: 'Quick checks on patient arrival',
+                firstThreeMinutes: {
+                    title: 'First 3 Minutes',
+                    subtitle: '5 things to check on arrival',
                     items: [
                         {
                             id: 'f5-pupils',
@@ -2238,12 +2238,12 @@
             const condition = CONDITIONS[state.currentCondition];
             const container = document.getElementById('firstThreeContent');
 
-            if (!condition || !condition.firstFiveMinutes) {
+            if (!condition || !condition.firstThreeMinutes) {
                 container.innerHTML = '';
                 return;
             }
 
-            const f3 = condition.firstFiveMinutes;
+            const f3 = condition.firstThreeMinutes;
             const items = f3.items;
 
             container.innerHTML = `
@@ -2641,7 +2641,7 @@
                 const target = targetDomain?.items.find(i => i.id === id);
                 content = target?.deepDive?.content || '';
             } else if (type === 'firstThree') {
-                const item = condition.firstFiveMinutes?.items.find(i => i.id === id);
+                const item = condition.firstThreeMinutes?.items.find(i => i.id === id);
                 content = item?.deepDive?.content || '';
             }
 
