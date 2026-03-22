@@ -932,6 +932,58 @@
             margin-top: 4px;
         }
 
+        /* Answer text */
+        .question-answer {
+            font-size: 14px;
+            color: var(--label-secondary);
+            line-height: 1.5;
+            padding: 4px 0 8px;
+            display: none;
+        }
+
+        .question-answer.revealed {
+            display: block;
+        }
+
+        /* Follow-up question */
+        .followup-link {
+            font-size: 13px;
+            color: var(--blue);
+            cursor: pointer;
+            padding: 4px 0;
+            display: none;
+            min-height: 44px;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .followup-link.revealed {
+            display: inline-flex;
+        }
+
+        .followup-link:active {
+            opacity: 0.6;
+        }
+
+        /* Hide considerations by default (legacy) */
+        .checklist-item .checklist-considerations {
+            display: none;
+        }
+
+        /* Make checklist content clickable area */
+        .checklist-content {
+            cursor: pointer;
+        }
+
+        /* Question arrow rotation */
+        .question-link .arrow {
+            transition: transform 0.2s ease;
+        }
+
+        .question-link.answered .arrow {
+            transform: rotate(90deg);
+        }
+
         .comparison-table {
             width: 100%;
             border-collapse: collapse;
@@ -2163,6 +2215,7 @@
             reviewedTargets: new Set(),
             checkedFirstThree: new Set(),
             expandedItems: new Set(),
+            revealedQuestions: new Set(),
             activeBottomSheet: null
         };
 
@@ -2410,11 +2463,11 @@
                     // Render with subsection headers
                     contentHtml = domain.subsections.map(sub => `
                         <div class="subsection-header">${sub.title}</div>
-                        ${sub.items.map(item => renderChecklistItem(item)).join('')}
+                        ${sub.items.map(item => renderChecklistItem(item, domain.id)).join('')}
                     `).join('');
                 } else {
                     // Render regular items
-                    contentHtml = domain.items.map(item => renderChecklistItem(item)).join('');
+                    contentHtml = domain.items.map(item => renderChecklistItem(item, domain.id)).join('');
                 }
 
                 return `
@@ -2438,19 +2491,60 @@
             container.innerHTML = html;
         }
 
-        function renderChecklistItem(item) {
+        function renderChecklistItem(item, domainId) {
             const checked = state.checkedItems.has(item.id);
+            const expanded = state.expandedItems.has(item.id);
+            const questionRevealed = state.revealedQuestions?.has(item.id);
+
+            // Generate question text based on domain/item type
+            const questionText = getQuestionText(domainId, item);
+            const hasQuestion = item.considerations || item.deepDive;
+
             return `
-                <div class="checklist-item ${checked ? 'checked' : ''}">
-                    <div class="checkbox ${checked ? 'checked' : ''}" onclick="toggleItem('${item.id}')"></div>
-                    <div class="checklist-content">
+                <div class="checklist-item ${checked ? 'checked' : ''} ${expanded ? 'expanded' : ''}" data-id="${item.id}">
+                    <div class="checkbox ${checked ? 'checked' : ''}" onclick="event.stopPropagation(); toggleItem('${item.id}')"></div>
+                    <div class="checklist-content" onclick="toggleItemExpand('${item.id}')">
                         <div class="checklist-title">${item.title}</div>
                         ${item.subtitle ? `<div class="checklist-subtitle">${item.subtitle}</div>` : ''}
-                        ${item.considerations ? `<div class="checklist-considerations">${item.considerations}</div>` : ''}
+                        ${hasQuestion ? `
+                            <div class="checklist-questions">
+                                <div class="question-link ${questionRevealed ? 'answered' : ''}" onclick="event.stopPropagation(); revealQuestion('${item.id}')">
+                                    ${questionText} <span class="arrow">${questionRevealed ? '▾' : '›'}</span>
+                                </div>
+                                <div class="question-answer ${questionRevealed ? 'revealed' : ''}">
+                                    ${item.considerations || ''}
+                                </div>
+                                ${item.deepDive && questionRevealed ? `
+                                    <div class="followup-link revealed" onclick="event.stopPropagation(); openSheet('${escapeHtml(item.deepDive.title)}', 'item', '${item.id}')">
+                                        Tell me more <span class="arrow">›</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        ` : ''}
                     </div>
-                    ${item.deepDive ? `<button class="checklist-info-btn" onclick="openSheet('${escapeHtml(item.deepDive.title)}', 'item', '${item.id}')">ℹ</button>` : ''}
                 </div>
             `;
+        }
+
+        function getQuestionText(domainId, item) {
+            // Investigation items
+            if (domainId === 'investigations' || item.id.includes('ecg') || item.id.includes('cxr') || item.id.includes('bloods')) {
+                return 'What am I looking for?';
+            }
+            // Medication items
+            if (domainId === 'management' && (item.id.includes('med') || item.id.includes('abx') || item.id.includes('cabg-meds'))) {
+                return 'What should I consider?';
+            }
+            // Target items
+            if (item.target || domainId === 'targets') {
+                return "What's the evidence?";
+            }
+            // Monitoring items
+            if (item.id.includes('monitor') || item.id.includes('ventil') || item.id.includes('warm')) {
+                return 'When should I worry?';
+            }
+            // Default
+            return 'What should I think about?';
         }
 
         // ============================================================
@@ -2535,6 +2629,30 @@
                 // Collapse all other items first (only one expanded at a time)
                 state.expandedItems.clear();
                 state.expandedItems.add(itemId);
+            }
+            // Re-render the current subchapter
+            if (state.currentSubchapter === 'firstThree') {
+                renderFirstThree();
+            } else if (state.currentSubchapter === 'plan') {
+                renderChecklist();
+            }
+
+            // Auto-scroll to show expanded item
+            if (state.expandedItems.has(itemId)) {
+                setTimeout(() => {
+                    const el = document.querySelector(`[data-id="${itemId}"]`);
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }, 50);
+            }
+        }
+
+        function revealQuestion(itemId) {
+            if (state.revealedQuestions.has(itemId)) {
+                state.revealedQuestions.delete(itemId);
+            } else {
+                state.revealedQuestions.add(itemId);
             }
             // Re-render the current subchapter
             if (state.currentSubchapter === 'firstThree') {
