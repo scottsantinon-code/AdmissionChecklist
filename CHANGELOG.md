@@ -1,4 +1,28 @@
-# Admission Checklist Changelog
+# The Plan Changelog
+
+## v0.2 — 2026-03-22
+
+### Structural Overhaul
+- Renamed app from "Admission Checklist" to "The Plan"
+- Restructured CABG condition into three sub-chapter cards:
+  - First 3 Minutes: 5 immediate arrival checks
+  - Understanding the Handover: 11 OR-to-ICU handover sections
+  - The Admission Plan: 7-domain structured checklist
+- Multi-level navigation: Home → Condition → Sub-chapter
+
+### Layered Disclosure Pattern
+- Checklist items now show only titles by default (glanceable)
+- Tap item to expand: reveals subtitle + question link
+- Tap question to reveal answer + follow-up link
+- Tap follow-up to open deep-dive bottom sheet
+- Same pattern applied to First 3 Minutes and Goals & Targets
+- Info (ℹ) buttons removed from collapsed views
+
+### Visual Improvements
+- Target cards redesigned as scannable rows (parameter + range + checkbox)
+- Smooth fade-slide animations on expand/collapse
+- Touch targets verified ≥44px throughout
+- Auto-scroll to expanded items
 
 ## v0.1 — 2026-03-21
 - Initial app build with complete CABG chapter
