@@ -640,64 +640,75 @@
             transform: scale(0.95);
         }
 
-        /* Target Cards (Goals & Targets) */
-        .target-card {
-            background: var(--bg-grouped);
-            border-radius: 12px;
-            padding: 14px 16px;
-            margin-bottom: 10px;
-            box-shadow: var(--card-shadow);
-        }
-
-        .target-header {
+        /* Target Rows (Goals & Targets) - same style as checklist items */
+        .target-row {
             display: flex;
             align-items: flex-start;
-            justify-content: space-between;
-            margin-bottom: 6px;
+            padding: 14px 16px;
+            gap: 12px;
+            border-bottom: 0.5px solid var(--separator);
+            cursor: pointer;
+        }
+
+        .target-row:last-child {
+            border-bottom: none;
+        }
+
+        .target-row .checkbox {
+            flex-shrink: 0;
+        }
+
+        .target-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .target-header-row {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
         }
 
         .target-param {
-            font-size: 15px;
-            font-weight: 600;
+            font-size: 16px;
+            font-weight: 500;
             color: var(--label);
+            min-width: 70px;
         }
 
         .target-range {
             font-size: 15px;
-            font-weight: 500;
             color: var(--blue);
+            font-weight: 400;
         }
 
         .target-nudge {
-            font-size: 13px;
-            color: var(--label-tertiary);
-            font-style: italic;
+            font-size: 14px;
+            color: var(--label-secondary);
             line-height: 1.4;
-            margin-bottom: 10px;
+            margin-top: 6px;
+            display: none;
         }
 
-        .target-footer {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 12px;
+        .target-row.expanded .target-nudge {
+            display: block;
         }
 
-        .target-reviewed {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
+        .target-questions {
+            margin-top: 4px;
+            display: none;
+        }
+
+        .target-row.expanded .target-questions {
+            display: block;
+        }
+
+        .target-row.reviewed .target-param,
+        .target-row.reviewed .target-range {
             color: var(--label-tertiary);
-            cursor: pointer;
         }
 
-        .target-reviewed .checkbox {
-            width: 20px;
-            height: 20px;
-            border-radius: 10px;
-        }
-
+        /* Legacy target-reviewed checkbox - now unused */
         .target-reviewed .checkbox.checked::after {
             font-size: 11px;
         }
@@ -2439,22 +2450,27 @@
                 let contentHtml = '';
 
                 if (domain.isTargets) {
-                    // Render as target cards
+                    // Render as target rows with layered disclosure
                     contentHtml = domain.items.map(item => {
                         const reviewed = state.reviewedTargets.has(item.id);
+                        const expanded = state.expandedItems.has(item.id);
+                        const questionRevealed = state.revealedQuestions?.has(item.id);
                         return `
-                            <div class="target-card">
-                                <div class="target-header">
-                                    <div class="target-param">${item.parameter}</div>
-                                    ${item.deepDive ? `<button class="checklist-info-btn" onclick="openSheet('${escapeHtml(item.deepDive.title)}', 'target', '${item.id}')">ℹ</button>` : ''}
-                                </div>
-                                <div class="target-range">${item.range}</div>
-                                <div class="target-nudge">${item.nudge}</div>
-                                <div class="target-footer">
-                                    <label class="target-reviewed" onclick="toggleTarget('${item.id}')">
-                                        <div class="checkbox ${reviewed ? 'checked' : ''}"></div>
-                                        <span>Reviewed</span>
-                                    </label>
+                            <div class="target-row ${reviewed ? 'reviewed' : ''} ${expanded ? 'expanded' : ''}" data-id="${item.id}">
+                                <div class="checkbox ${reviewed ? 'checked' : ''}" onclick="event.stopPropagation(); toggleTarget('${item.id}')"></div>
+                                <div class="target-content" onclick="toggleItemExpand('${item.id}')">
+                                    <div class="target-header-row">
+                                        <div class="target-param">${item.parameter}</div>
+                                        <div class="target-range">${item.range}</div>
+                                    </div>
+                                    ${item.nudge ? `<div class="target-nudge">${item.nudge}</div>` : ''}
+                                    ${item.deepDive ? `
+                                        <div class="target-questions">
+                                            <div class="question-link ${questionRevealed ? 'answered' : ''}" onclick="event.stopPropagation(); openSheet('${escapeHtml(item.deepDive.title)}', 'target', '${item.id}')">
+                                                What's the evidence? <span class="arrow">›</span>
+                                            </div>
+                                        </div>
+                                    ` : ''}
                                 </div>
                             </div>
                         `;
@@ -2480,7 +2496,7 @@
                             </div>
                         </div>
                         <div class="domain-content">
-                            ${domain.isTargets ? `<div style="padding: 12px 16px;">${contentHtml}</div>` : contentHtml}
+                            ${contentHtml}
                         </div>
                     </div>
                 `;
